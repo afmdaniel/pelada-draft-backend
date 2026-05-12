@@ -11,3 +11,10 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Player {
+  id       String @id @default(uuid())
+  name     String
+  stars    Int
+  position String
+}
