@@ -31,7 +31,7 @@ export class PeladaController {
   }
 
   @Get(':peladaId/players')
-  async listByPelada(@Param('peladaId') peladaId: string) {
+  async listPlayersByPelada(@Param('peladaId') peladaId: string) {
     const players = await this.getPlayersByPelada.execute({
       peladaId,
     });
