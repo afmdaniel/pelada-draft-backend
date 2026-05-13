@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service'; // Você precisará criar este service simples do Nest
 import { PeladaRepository } from '../../../../core/repositories/pelada-repository';
-import {
-  Player,
-  PlayerPosition,
-} from '../../../../core/entities/player.entity';
+import { Player } from '../../../../core/entities/player.entity';
 import { Pelada } from '../../../../core/entities/pelada.entity';
+import { PrismaPlayerMapper } from '../mappers/prisma-player-mapper';
 
 @Injectable()
 export class PrismaPeladaRepository extends PeladaRepository {
@@ -14,14 +12,10 @@ export class PrismaPeladaRepository extends PeladaRepository {
   }
 
   async addPlayer(player: Player): Promise<void> {
+    const raw = PrismaPlayerMapper.toPrisma(player);
+
     await this.prisma.player.create({
-      data: {
-        id: player.id,
-        name: player.name,
-        stars: player.stars,
-        position: player.position ?? 'Geral',
-        peladaId: player.peladaId,
-      },
+      data: raw,
     });
   }
 
@@ -30,16 +24,7 @@ export class PrismaPeladaRepository extends PeladaRepository {
       where: { peladaId },
     });
 
-    return playersRaw.map(
-      (p) =>
-        new Player({
-          id: p.id,
-          name: p.name,
-          stars: p.stars,
-          position: p.position as PlayerPosition,
-          peladaId: p.peladaId,
-        }),
-    );
+    return playersRaw.map((player) => PrismaPlayerMapper.toDomain(player));
   }
 
   async create(pelada: Pelada): Promise<void> {
