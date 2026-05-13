@@ -1,69 +1,33 @@
+import { Injectable } from '@nestjs/common';
 import { Player } from '../entities/player.entity';
+import { PeladaRepository } from '../repositories/pelada-repository';
+import { DrawBalancerService } from '../services/draw-balancer.service';
 
-export function drawTeams(
-  players: Player[],
-  numberOfTeams: number,
-): Player[][] {
-  const completePlayers = fillWithGhostPlayers(players, numberOfTeams);
-
-  const sortedPlayers = [...completePlayers].sort((a, b) => b.stars - a.stars);
-
-  const teams: Player[][] = Array.from({ length: numberOfTeams }, () => []);
-  const teamScores = Array(numberOfTeams).fill(0);
-
-  sortedPlayers.forEach((player) => {
-    const minScoreIndex = teamScores.indexOf(Math.min(...teamScores));
-
-    teams[minScoreIndex].push(player);
-    teamScores[minScoreIndex] += player.stars;
-  });
-
-  return teams;
+interface DrawTeamsInput {
+  peladaId: string;
+  playersIds: string[];
+  teamsQuantity: number;
 }
 
-export function getMostFrequentStars(players: Player[]): number {
-  const frequency = new Map<number, number>();
+@Injectable()
+export class DrawTeams {
+  constructor(private peladaRepository: PeladaRepository) {}
 
-  players.forEach((player) => {
-    frequency.set(player.stars, (frequency.get(player.stars) || 0) + 1);
-  });
+  async execute(input: DrawTeamsInput): Promise<Player[][]> {
+    const allPlayers = await this.peladaRepository.findManyPlayersByPeladaId(
+      input.peladaId,
+    );
 
-  let mostFrequent = players[0]?.stars ?? 0;
-  let highestCount = 0;
+    const selectedPlayers = allPlayers.filter((player) =>
+      input.playersIds.includes(player.id!),
+    );
 
-  frequency.forEach((count, stars) => {
-    if (count > highestCount) {
-      highestCount = count;
-      mostFrequent = stars;
+    if (selectedPlayers.length !== input.playersIds.length) {
+      throw new Error(
+        'Um ou mais jogadores selecionados não pertencem a esta pelada.',
+      );
     }
-  });
 
-  return mostFrequent;
-}
-
-export function fillWithGhostPlayers(
-  players: Player[],
-  numberOfTeams: number,
-): Player[] {
-  const remainder = players.length % numberOfTeams;
-
-  if (remainder === 0) {
-    return players;
+    return DrawBalancerService.draw(selectedPlayers, input.teamsQuantity);
   }
-
-  const missingPlayers = numberOfTeams - remainder;
-  const mostFrequentStars = getMostFrequentStars(players);
-  const peladaId = players[0]?.peladaId;
-
-  const ghostPlayers: Player[] = Array.from(
-    { length: missingPlayers },
-    (_, index) =>
-      new Player({
-        name: `Ghost ${index + 1}`,
-        stars: mostFrequentStars,
-        peladaId,
-      }),
-  );
-
-  return [...players, ...ghostPlayers];
 }
