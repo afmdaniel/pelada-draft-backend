@@ -11,4 +11,12 @@ export class PlayerPresenter {
       peladaId: player.peladaId,
     };
   }
+
+  static toSummaryHTTP(player: Player) {
+    return {
+      name: player.name,
+      stars: player.stars,
+      position: player.position,
+    };
+  }
 }

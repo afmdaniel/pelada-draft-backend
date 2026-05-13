@@ -3,12 +3,16 @@ import { AddPlayerToPelada } from '../../../../core/use-cases/add-player-to-pela
 import { GetPlayersByPelada } from '../../../../core/use-cases/get-player-by-pelada';
 import { CreatePlayerBody } from '../../dtos/create-player-body';
 import { PlayerPresenter } from '../../presenters/player-presenter';
+import { DrawTeamsBody } from '../../dtos/draw-teams-body';
+import { DrawTeams } from '../../../../core/use-cases/draw-teams';
+import { DrawPresenter } from '../../presenters/draw-presenter';
 
 @Controller('peladas')
 export class PeladaController {
   constructor(
     private addPlayerToPelada: AddPlayerToPelada,
     private getPlayersByPelada: GetPlayersByPelada,
+    private drawTeams: DrawTeams,
   ) {}
 
   @Post(':peladaId/players')
@@ -39,5 +43,12 @@ export class PeladaController {
     return {
       players: players.map((player) => PlayerPresenter.toHTTP(player)),
     };
+  }
+
+  @Post(':peladaId/draw')
+  async draw(@Param('peladaId') peladaId: string, @Body() body: DrawTeamsBody) {
+    const result = await this.drawTeams.execute({ ...body, peladaId });
+
+    return { draw: DrawPresenter.toHTTP(result) };
   }
 }
