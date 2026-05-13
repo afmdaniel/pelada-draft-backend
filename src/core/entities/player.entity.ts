@@ -5,6 +5,7 @@ export interface PlayerProps {
   name: string;
   stars: number;
   position?: PlayerPosition;
+  peladaId: string;
 }
 
 export class Player {
@@ -20,7 +21,11 @@ export class Player {
     };
   }
 
-  private validate({ name, stars }: PlayerProps) {
+  private validate({ name, stars, peladaId }: PlayerProps) {
+    if (!peladaId) {
+      throw new Error('O jogador deve pertencer a uma pelada.');
+    }
+
     if (!name || name.trim().length < 2) {
       throw new Error('O nome deve ter pelo menos 2 caracteres.');
     }
@@ -44,5 +49,8 @@ export class Player {
   }
   get position() {
     return this.props.position;
+  }
+  get peladaId() {
+    return this.props.peladaId;
   }
 }

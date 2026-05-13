@@ -12,9 +12,26 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id      String   @id @default(uuid())
+  email   String   @unique
+  name    String
+  peladas Pelada[] 
+}
+
+model Pelada {
+  id      String   @id @default(uuid())
+  name    String
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+  players Player[] 
+}
+
 model Player {
   id       String @id @default(uuid())
   name     String
   stars    Int
   position String
+  peladaId String
+  pelada   Pelada @relation(fields: [peladaId], references: [id])
 }

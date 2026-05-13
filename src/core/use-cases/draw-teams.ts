@@ -53,11 +53,16 @@ export function fillWithGhostPlayers(
 
   const missingPlayers = numberOfTeams - remainder;
   const mostFrequentStars = getMostFrequentStars(players);
+  const peladaId = players[0]?.peladaId;
 
   const ghostPlayers: Player[] = Array.from(
     { length: missingPlayers },
     (_, index) =>
-      new Player({ name: `Ghost ${index + 1}`, stars: mostFrequentStars }),
+      new Player({
+        name: `Ghost ${index + 1}`,
+        stars: mostFrequentStars,
+        peladaId,
+      }),
   );
 
   return [...players, ...ghostPlayers];
