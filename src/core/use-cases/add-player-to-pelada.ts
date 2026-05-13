@@ -1,4 +1,4 @@
-// import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Player } from '../entities/player.entity';
 import { PeladaRepository } from '../repositories/pelada-repository';
 
@@ -9,11 +9,13 @@ interface AddPlayerInput {
   peladaId: string;
 }
 
+@Injectable()
 export class AddPlayerToPelada {
   constructor(private peladaRepository: PeladaRepository) {}
 
   async execute(input: AddPlayerInput): Promise<Player> {
     const pelada = await this.peladaRepository.findById(input.peladaId);
+
     if (!pelada) {
       throw new Error('Pelada não encontrada.');
     }
