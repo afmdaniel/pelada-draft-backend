@@ -1,14 +1,22 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { AddPlayerToPelada } from '../../../../core/use-cases/add-player-to-pelada';
+import { GetPlayersByPelada } from '../../../../core/use-cases/get-player-by-pelada';
 import { CreatePlayerBody } from '../../dtos/create-player-body';
+import { PlayerPresenter } from '../../presenters/player-presenter';
 
-@Controller('players')
-export class PlayerController {
-  constructor(private addPlayerToPelada: AddPlayerToPelada) {}
+@Controller('peladas')
+export class PeladaController {
+  constructor(
+    private addPlayerToPelada: AddPlayerToPelada,
+    private getPlayersByPelada: GetPlayersByPelada,
+  ) {}
 
-  @Post()
-  async create(@Body() body: CreatePlayerBody) {
-    const { name, stars, position, peladaId } = body;
+  @Post(':peladaId/players')
+  async create(
+    @Param('peladaId') peladaId: string,
+    @Body() body: CreatePlayerBody,
+  ) {
+    const { name, stars, position } = body;
 
     const player = await this.addPlayerToPelada.execute({
       name,
@@ -18,11 +26,18 @@ export class PlayerController {
     });
 
     return {
-      player: {
-        id: player.id,
-        name: player.name,
-        stars: player.stars,
-      },
+      player: PlayerPresenter.toHTTP(player),
+    };
+  }
+
+  @Get(':peladaId/players')
+  async listByPelada(@Param('peladaId') peladaId: string) {
+    const players = await this.getPlayersByPelada.execute({
+      peladaId,
+    });
+
+    return {
+      players: players.map((player) => PlayerPresenter.toHTTP(player)),
     };
   }
 }

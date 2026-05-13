@@ -20,8 +20,4 @@ export class CreatePlayerBody {
   @IsOptional()
   @IsString()
   position?: 'Zaga' | 'Meio' | 'Ataque' | 'Geral';
-
-  @IsNotEmpty()
-  @IsString()
-  peladaId!: string;
 }

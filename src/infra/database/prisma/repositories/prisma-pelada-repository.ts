@@ -19,7 +19,7 @@ export class PrismaPeladaRepository extends PeladaRepository {
     });
   }
 
-  async getPlayersByPelada(peladaId: string): Promise<Player[]> {
+  async findManyPlayersByPeladaId(peladaId: string): Promise<Player[]> {
     const playersRaw = await this.prisma.player.findMany({
       where: { peladaId },
     });
@@ -46,7 +46,7 @@ export class PrismaPeladaRepository extends PeladaRepository {
       return null;
     }
 
-    const players = await this.getPlayersByPelada(id);
+    const players = await this.findManyPlayersByPeladaId(id);
 
     return new Pelada({
       id: peladaRaw.id,
