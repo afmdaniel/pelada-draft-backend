@@ -13,26 +13,57 @@ datasource db {
   provider = "postgresql"
 }
 
+enum GlobalRole {
+  ADMIN
+  USER
+}
+
+enum PeladaPrivilege {
+  MANAGE_PLAYERS
+  DRAW_TEAMS
+  FULL_ACCESS
+}
+
 model User {
-  id      String   @id @default(uuid())
-  email   String   @unique
-  name    String
-  peladas Pelada[] 
+  id          String             @id @default(uuid())
+  email       String             @unique
+  username    String             @unique
+  password    String
+  role        GlobalRole         @default(USER)
+  ownedPeladas Pelada[]          @relation("PeladaOwner")
+  permissions  PeladaPermission[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 }
 
 model Pelada {
-  id      String   @id @default(uuid())
-  name    String
-  userId  String
-  user    User     @relation(fields: [userId], references: [id])
-  players Player[] 
+  id          String             @id @default(uuid())
+  name        String
+  ownerId     String
+  owner       User               @relation("PeladaOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  players     Player[]
+  permissions PeladaPermission[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model PeladaPermission {
+  id        String          @id @default(uuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  peladaId  String
+  pelada    Pelada          @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+  privilege PeladaPrivilege
+  createdAt DateTime        @default(now())
+  @@unique([userId, peladaId, privilege])
 }
 
 model Player {
-  id       String @id @default(uuid())
-  name     String
-  stars    Int
-  position String
-  peladaId String
-  pelada   Pelada @relation(fields: [peladaId], references: [id])
+  id        String   @id @default(uuid())
+  name      String
+  stars     Int
+  position  String   @default("Geral")
+  peladaId  String
+  pelada    Pelada   @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
