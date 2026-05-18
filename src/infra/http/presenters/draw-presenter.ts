@@ -1,4 +1,3 @@
-// src/infra/http/presenters/draw-presenter.ts
 import { Player } from '../../../core/entities/player.entity';
 import { PlayerPresenter } from './player-presenter';
 

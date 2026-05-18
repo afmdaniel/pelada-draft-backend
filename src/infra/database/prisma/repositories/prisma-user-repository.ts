@@ -1,4 +1,3 @@
-// src/infra/database/prisma/repositories/prisma-user-repository.ts
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../../../../core/repositories/user-repository';
 import { PrismaService } from '../prisma.service';
@@ -22,6 +21,14 @@ export class PrismaUserRepository implements UserRepository {
 
   async findByUsername(username: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({ where: { username } });
+    if (!user) return null;
+    return PrismaUserMapper.toDomain(user);
+  }
+
+  async findByIdentifier(identifier: string): Promise<User | null> {
+    const user = await this.prisma.user.findFirst({
+      where: { OR: [{ email: identifier }, { username: identifier }] },
+    });
     if (!user) return null;
     return PrismaUserMapper.toDomain(user);
   }

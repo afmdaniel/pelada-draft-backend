@@ -1,4 +1,3 @@
-// src/infra/http/presenters/player-presenter.ts
 import { Player } from '../../../core/entities/player.entity';
 
 export class PlayerPresenter {
