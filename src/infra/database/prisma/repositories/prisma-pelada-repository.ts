@@ -50,4 +50,25 @@ export class PrismaPeladaRepository extends PeladaRepository {
 
     return PrismaPeladaMapper.toDomain(peladaRaw);
   }
+
+  async findManyByUserId(userId: string): Promise<Pelada[]> {
+    const raw = await this.prisma.pelada.findMany({
+      where: {
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            permissions: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    return raw.map((pelada) => PrismaPeladaMapper.toDomain(pelada));
+  }
 }

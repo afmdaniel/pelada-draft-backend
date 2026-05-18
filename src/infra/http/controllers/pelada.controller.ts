@@ -7,18 +7,39 @@ import { DrawTeamsBody } from '../dtos/draw-teams-body';
 import { DrawTeams } from '../../../core/use-cases/draw-teams';
 import { DrawPresenter } from '../presenters/draw-presenter';
 import { AuthGuard } from '../guards/auth.guard';
+import { CreatePelada } from '../../../core/use-cases/create-pelada';
+import { CreatePeladaBody } from '../dtos/create-pelada-body';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import type { JwtPayload } from '../guards/auth.guard';
+import { PeladaPresenter } from '../presenters/pelada-presenter';
 
 @Controller('peladas')
 @UseGuards(AuthGuard)
 export class PeladaController {
   constructor(
+    private createPelada: CreatePelada,
     private addPlayerToPelada: AddPlayerToPelada,
     private getPlayersByPelada: GetPlayersByPelada,
     private drawTeams: DrawTeams,
   ) {}
 
-  @Post(':peladaId/players')
+  @Post()
   async create(
+    @Body() body: CreatePeladaBody,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const pelada = await this.createPelada.execute({
+      ownerId: user.sub,
+      name: body.name,
+    });
+
+    return {
+      pelada: PeladaPresenter.toHTTP(pelada),
+    };
+  }
+
+  @Post(':peladaId/players')
+  async createPlayer(
     @Param('peladaId') peladaId: string,
     @Body() body: CreatePlayerBody,
   ) {

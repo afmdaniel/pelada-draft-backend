@@ -12,6 +12,7 @@ import { AuthenticateUser } from '../../core/use-cases/authenticate-user';
 import { JwtModule } from '@nestjs/jwt';
 import { Encrypter } from '../../core/services/encrypter';
 import { JwtEncrypter } from '../cryptography/jwt-encrypter';
+import { CreatePelada } from '../../core/use-cases/create-pelada';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { JwtEncrypter } from '../cryptography/jwt-encrypter';
   ],
   controllers: [PeladaController, AuthController],
   providers: [
+    CreatePelada,
     AddPlayerToPelada,
     GetPlayersByPelada,
     DrawTeams,
