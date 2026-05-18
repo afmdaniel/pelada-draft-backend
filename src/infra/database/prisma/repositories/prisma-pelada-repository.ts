@@ -32,7 +32,7 @@ export class PrismaPeladaRepository extends PeladaRepository {
       data: {
         id: pelada.id,
         name: pelada.name,
-        userId: pelada.userId,
+        ownerId: pelada.ownerId,
       },
     });
   }
@@ -51,7 +51,7 @@ export class PrismaPeladaRepository extends PeladaRepository {
     return new Pelada({
       id: peladaRaw.id,
       name: peladaRaw.name,
-      userId: peladaRaw.userId,
+      ownerId: peladaRaw.ownerId,
       players,
     });
   }

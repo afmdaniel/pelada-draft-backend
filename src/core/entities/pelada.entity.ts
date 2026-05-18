@@ -1,16 +1,22 @@
+import { Player } from './player.entity';
+
 export interface PeladaProps {
+  id?: string;
   name: string;
   ownerId: string;
+  players?: Player[];
 }
 
 export class Pelada {
-  private _id: string;
   private props: PeladaProps;
 
   constructor(props: PeladaProps) {
     this.validate(props);
-    this._id = crypto.randomUUID();
-    this.props = props;
+    this.props = {
+      ...props,
+      id: props.id ?? crypto.randomUUID(),
+      players: props.players ?? [],
+    };
   }
 
   private validate({ name, ownerId }: PeladaProps) {
@@ -23,7 +29,7 @@ export class Pelada {
   }
 
   get id() {
-    return this._id;
+    return this.props.id;
   }
   get name() {
     return this.props.name;
