@@ -4,7 +4,7 @@ import { PeladaRepository } from '../../../../core/repositories/pelada-repositor
 import { Player } from '../../../../core/entities/player.entity';
 import { Pelada } from '../../../../core/entities/pelada.entity';
 import { PrismaPlayerMapper } from '../mappers/prisma-player-mapper';
-import { PrismaPeladaMapper } from '../mappers/prisma-pelada.mapper';
+import { PrismaPeladaMapper } from '../mappers/prisma-pelada-mapper';
 
 @Injectable()
 export class PrismaPeladaRepository extends PeladaRepository {
