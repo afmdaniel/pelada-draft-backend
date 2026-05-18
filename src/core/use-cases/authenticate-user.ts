@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../repositories/user-repository';
 import { HashGenerator } from '../services/hash-generator';
 import { Encrypter } from '../services/encrypter';
+import { randomUUID } from 'crypto';
 
 interface AuthenticateUserInput {
   identifier: string;
@@ -38,6 +39,7 @@ export class AuthenticateUser {
     const accessToken = await this.encrypter.encrypt({
       sub: user.id,
       role: user.role,
+      jti: randomUUID(),
     });
 
     return { accessToken };

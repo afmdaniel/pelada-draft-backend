@@ -1,9 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { RegisterUser } from '../../../../core/use-cases/register-user';
-import { AuthenticateUser } from '../../../../core/use-cases/authenticate-user';
-import { RegisterUserBody } from '../../dtos/register-user-body';
-import { AuthenticateBody } from '../../dtos/authenticate-body';
-import { UserPresenter } from '../../presenters/user-presenter';
+import { RegisterUser } from '../../../core/use-cases/register-user';
+import { AuthenticateUser } from '../../../core/use-cases/authenticate-user';
+import { RegisterUserBody } from '../dtos/register-user-body';
+import { AuthenticateBody } from '../dtos/authenticate-body';
+import { UserPresenter } from '../presenters/user-presenter';
 
 @Controller('auth')
 export class AuthController {

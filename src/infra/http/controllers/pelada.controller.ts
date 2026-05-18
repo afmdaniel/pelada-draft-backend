@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { AddPlayerToPelada } from '../../../../core/use-cases/add-player-to-pelada';
-import { GetPlayersByPelada } from '../../../../core/use-cases/get-player-by-pelada';
-import { CreatePlayerBody } from '../../dtos/create-player-body';
-import { PlayerPresenter } from '../../presenters/player-presenter';
-import { DrawTeamsBody } from '../../dtos/draw-teams-body';
-import { DrawTeams } from '../../../../core/use-cases/draw-teams';
-import { DrawPresenter } from '../../presenters/draw-presenter';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { AddPlayerToPelada } from '../../../core/use-cases/add-player-to-pelada';
+import { GetPlayersByPelada } from '../../../core/use-cases/get-player-by-pelada';
+import { CreatePlayerBody } from '../dtos/create-player-body';
+import { PlayerPresenter } from '../presenters/player-presenter';
+import { DrawTeamsBody } from '../dtos/draw-teams-body';
+import { DrawTeams } from '../../../core/use-cases/draw-teams';
+import { DrawPresenter } from '../presenters/draw-presenter';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('peladas')
+@UseGuards(AuthGuard)
 export class PeladaController {
   constructor(
     private addPlayerToPelada: AddPlayerToPelada,
