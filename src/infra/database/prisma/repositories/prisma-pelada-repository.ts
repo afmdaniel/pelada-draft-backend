@@ -4,6 +4,7 @@ import { PeladaRepository } from '../../../../core/repositories/pelada-repositor
 import { Player } from '../../../../core/entities/player.entity';
 import { Pelada } from '../../../../core/entities/pelada.entity';
 import { PrismaPlayerMapper } from '../mappers/prisma-player-mapper';
+import { PrismaPeladaMapper } from '../mappers/prisma-pelada.mapper';
 
 @Injectable()
 export class PrismaPeladaRepository extends PeladaRepository {
@@ -28,31 +29,25 @@ export class PrismaPeladaRepository extends PeladaRepository {
   }
 
   async create(pelada: Pelada): Promise<void> {
+    const raw = PrismaPeladaMapper.toPrisma(pelada);
+
     await this.prisma.pelada.create({
-      data: {
-        id: pelada.id,
-        name: pelada.name,
-        ownerId: pelada.ownerId,
-      },
+      data: raw,
     });
   }
 
   async findById(id: string): Promise<Pelada | null> {
     const peladaRaw = await this.prisma.pelada.findUnique({
       where: { id },
+      include: {
+        players: true,
+      },
     });
 
     if (!peladaRaw) {
       return null;
     }
 
-    const players = await this.findManyPlayersByPeladaId(id);
-
-    return new Pelada({
-      id: peladaRaw.id,
-      name: peladaRaw.name,
-      ownerId: peladaRaw.ownerId,
-      players,
-    });
+    return PrismaPeladaMapper.toDomain(peladaRaw);
   }
 }
