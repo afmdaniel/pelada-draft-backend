@@ -12,9 +12,12 @@ import { CreatePeladaBody } from '../dtos/create-pelada-body';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import type { JwtPayload } from '../guards/auth.guard';
 import { PeladaPresenter } from '../presenters/pelada-presenter';
+import { RequirePrivilege } from '../decorators/require-privilege.decorator';
+import { PeladaPrivilege } from '../../database/generated/prisma/enums';
+import { PeladaAccessGuard } from '../guards/pelada-access.guard';
 
 @Controller('peladas')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PeladaAccessGuard)
 export class PeladaController {
   constructor(
     private createPelada: CreatePelada,
@@ -39,6 +42,7 @@ export class PeladaController {
   }
 
   @Post(':peladaId/players')
+  @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
   async createPlayer(
     @Param('peladaId') peladaId: string,
     @Body() body: CreatePlayerBody,
@@ -69,6 +73,7 @@ export class PeladaController {
   }
 
   @Post(':peladaId/draw')
+  @RequirePrivilege(PeladaPrivilege.DRAW_TEAMS)
   async draw(@Param('peladaId') peladaId: string, @Body() body: DrawTeamsBody) {
     const result = await this.drawTeams.execute({ ...body, peladaId });
 
