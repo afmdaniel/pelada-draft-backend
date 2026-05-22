@@ -13,6 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { Encrypter } from '../../core/services/encrypter';
 import { JwtEncrypter } from '../cryptography/jwt-encrypter';
 import { CreatePelada } from '../../core/use-cases/create-pelada';
+import { ChangePassword } from '../../core/use-cases/change-password';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CreatePelada } from '../../core/use-cases/create-pelada';
     DrawTeams,
     RegisterUser,
     AuthenticateUser,
+    ChangePassword,
     {
       provide: HashGenerator,
       useClass: BcryptGenerator,

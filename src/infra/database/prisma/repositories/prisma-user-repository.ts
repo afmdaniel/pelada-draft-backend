@@ -13,6 +13,12 @@ export class PrismaUserRepository implements UserRepository {
     await this.prisma.user.create({ data });
   }
 
+  async findById(userId: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return null;
+    return PrismaUserMapper.toDomain(user);
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) return null;
@@ -31,5 +37,12 @@ export class PrismaUserRepository implements UserRepository {
     });
     if (!user) return null;
     return PrismaUserMapper.toDomain(user);
+  }
+
+  async updatePassword(userId: string, password: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password },
+    });
   }
 }
