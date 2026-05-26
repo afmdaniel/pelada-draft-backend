@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { JwtSignOptions } from '@nestjs/jwt';
+import ms, { StringValue } from 'ms';
 import { UserRepository } from '../repositories/user-repository';
+import { RefreshTokenRepository } from '../repositories/refresh-token-repository';
 import { HashGenerator } from '../services/hash-generator';
 import { Encrypter } from '../services/encrypter';
 import { randomUUID } from 'crypto';
+import { authConfig } from '../../infra/config/auth';
+import { RefreshToken } from '../entities/refresh-token.entity';
 
 interface AuthenticateUserInput {
   identifier: string;
@@ -11,12 +16,14 @@ interface AuthenticateUserInput {
 
 interface AuthenticateUserOutput {
   accessToken: string;
+  refreshToken: string;
 }
 
 @Injectable()
 export class AuthenticateUser {
   constructor(
     private userRepository: UserRepository,
+    private refreshTokenRepository: RefreshTokenRepository,
     private hashGenerator: HashGenerator,
     private encrypter: Encrypter,
   ) {}
@@ -36,12 +43,40 @@ export class AuthenticateUser {
       throw new Error('Senha incorreta');
     }
 
-    const accessToken = await this.encrypter.encrypt({
-      sub: user.id,
-      role: user.role,
-      jti: randomUUID(),
+    const accessToken = await this.encrypter.encrypt(
+      {
+        sub: user.id,
+        role: user.role,
+      },
+      {
+        secret: authConfig.jwt.accessTokenSecret!,
+        expiresIn: authConfig.jwt
+          .accessTokenExpiresIn! as JwtSignOptions['expiresIn'],
+      },
+    );
+
+    const refreshTokenJti = randomUUID();
+    const refreshToken = await this.encrypter.encrypt(
+      { sub: user.id, jti: refreshTokenJti },
+      {
+        secret: authConfig.jwt.refreshTokenSecret!,
+        expiresIn: authConfig.jwt
+          .refreshTokenExpiresIn! as JwtSignOptions['expiresIn'],
+      },
+    );
+
+    const currentTime = Date.now();
+    const expiresInMs = ms(authConfig.jwt.refreshTokenExpiresIn as StringValue);
+    const expiresAtDate = new Date(currentTime + expiresInMs);
+
+    const refreshTokenData = new RefreshToken({
+      tokenJti: refreshTokenJti,
+      userId: user.id,
+      expiresAt: expiresAtDate,
     });
 
-    return { accessToken };
+    await this.refreshTokenRepository.create(refreshTokenData);
+
+    return { accessToken, refreshToken };
   }
 }

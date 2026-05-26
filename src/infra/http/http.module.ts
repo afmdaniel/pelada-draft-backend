@@ -14,6 +14,8 @@ import { Encrypter } from '../../core/services/encrypter';
 import { JwtEncrypter } from '../cryptography/jwt-encrypter';
 import { CreatePelada } from '../../core/use-cases/create-pelada';
 import { ChangePassword } from '../../core/use-cases/change-password';
+import { RefreshAccessToken } from '../../core/use-cases/refresh-access-token';
+import { LogoutUser } from '../../core/use-cases/logout-user';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { ChangePassword } from '../../core/use-cases/change-password';
     RegisterUser,
     AuthenticateUser,
     ChangePassword,
+    RefreshAccessToken,
+    LogoutUser,
     {
       provide: HashGenerator,
       useClass: BcryptGenerator,

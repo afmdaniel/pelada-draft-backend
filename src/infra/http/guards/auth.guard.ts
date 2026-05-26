@@ -1,4 +1,3 @@
-// src/infra/http/guards/auth.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -8,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { GlobalRole } from '../../database/generated/prisma/enums';
+import { authConfig } from '../../config/auth';
 
 export interface JwtPayload {
   sub: string;
@@ -34,10 +34,13 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: authConfig.jwt.accessTokenSecret,
+      });
 
       request.user = payload;
-    } catch {
+    } catch (error) {
+      console.error('Erro na validação do Access Token:', error);
       throw new UnauthorizedException('Token inválido ou expirado.');
     }
 

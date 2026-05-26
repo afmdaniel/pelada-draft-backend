@@ -4,10 +4,16 @@ import { PeladaRepository } from '../../core/repositories/pelada-repository';
 import { PrismaPeladaRepository } from './prisma/repositories/prisma-pelada-repository';
 import { UserRepository } from '../../core/repositories/user-repository';
 import { PrismaUserRepository } from './prisma/repositories/prisma-user-repository';
+import { RefreshTokenRepository } from '../../core/repositories/refresh-token-repository';
+import { PrismaRefreshTokenRepository } from './prisma/repositories/prisma-refresh-token-repository';
 
 @Module({
   providers: [
     PrismaService,
+    {
+      provide: RefreshTokenRepository,
+      useClass: PrismaRefreshTokenRepository,
+    },
     {
       provide: PeladaRepository,
       useClass: PrismaPeladaRepository,
@@ -17,6 +23,11 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user-reposito
       useClass: PrismaUserRepository,
     },
   ],
-  exports: [PrismaService, PeladaRepository, UserRepository],
+  exports: [
+    PrismaService,
+    PeladaRepository,
+    UserRepository,
+    RefreshTokenRepository,
+  ],
 })
 export class DatabaseModule {}

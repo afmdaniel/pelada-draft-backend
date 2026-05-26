@@ -35,6 +35,7 @@ model User {
   permissions  PeladaPermission[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
+  refreshTokens UserRefreshToken[]
 }
 
 model Pelada {
@@ -66,5 +67,14 @@ model Player {
   position  String   @default("Geral")
   peladaId  String
   pelada    Pelada   @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model UserRefreshToken {
+  id        String   @id @default(uuid())
+  tokenJti  String   @unique // O ID único do refresh token gerado
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
   createdAt DateTime @default(now())
 }
