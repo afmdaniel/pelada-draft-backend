@@ -1,20 +1,22 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { AddPlayerToPelada } from '../../../core/use-cases/add-player-to-pelada';
 import { GetPlayersByPelada } from '../../../core/use-cases/get-player-by-pelada';
-import { CreatePlayerBody } from '../dtos/create-player-body';
-import { PlayerPresenter } from '../presenters/player-presenter';
-import { DrawTeamsBody } from '../dtos/draw-teams-body';
 import { DrawTeams } from '../../../core/use-cases/draw-teams';
-import { DrawPresenter } from '../presenters/draw-presenter';
-import { AuthGuard } from '../guards/auth.guard';
+import { ManagePeladaPermission } from '../../../core/use-cases/manage-pelada-permission';
 import { CreatePelada } from '../../../core/use-cases/create-pelada';
+import { CreatePlayerBody } from '../dtos/create-player-body';
+import { DrawTeamsBody } from '../dtos/draw-teams-body';
 import { CreatePeladaBody } from '../dtos/create-pelada-body';
-import { CurrentUser } from '../decorators/current-user.decorator';
-import type { JwtPayload } from '../guards/auth.guard';
+import { ManagePermissionBody } from '../dtos/manage-permission-body';
+import { PlayerPresenter } from '../presenters/player-presenter';
+import { DrawPresenter } from '../presenters/draw-presenter';
 import { PeladaPresenter } from '../presenters/pelada-presenter';
+import { CurrentUser } from '../decorators/current-user.decorator';
 import { RequirePrivilege } from '../decorators/require-privilege.decorator';
-import { PeladaPrivilege } from '../../database/generated/prisma/enums';
+import { AuthGuard } from '../guards/auth.guard';
+import type { JwtPayload } from '../guards/auth.guard';
 import { PeladaAccessGuard } from '../guards/pelada-access.guard';
+import { PeladaPrivilege } from '../../database/generated/prisma/enums';
 
 @Controller('peladas')
 @UseGuards(AuthGuard, PeladaAccessGuard)
@@ -24,6 +26,7 @@ export class PeladaController {
     private addPlayerToPelada: AddPlayerToPelada,
     private getPlayersByPelada: GetPlayersByPelada,
     private drawTeams: DrawTeams,
+    private managePeladaPermission: ManagePeladaPermission,
   ) {}
 
   @Post()
@@ -62,6 +65,7 @@ export class PeladaController {
   }
 
   @Get(':peladaId/players')
+  @RequirePrivilege(PeladaPrivilege.DRAW_TEAMS, PeladaPrivilege.MANAGE_PLAYERS)
   async listPlayersByPelada(@Param('peladaId') peladaId: string) {
     const players = await this.getPlayersByPelada.execute({
       peladaId,
@@ -78,5 +82,20 @@ export class PeladaController {
     const result = await this.drawTeams.execute({ ...body, peladaId });
 
     return { draw: DrawPresenter.toHTTP(result) };
+  }
+
+  @Post(':peladaId/permission')
+  async managePermission(
+    @Param('peladaId') peladaId: string,
+    @Body() body: ManagePermissionBody,
+  ) {
+    await this.managePeladaPermission.execute({
+      peladaId,
+      userIdentifier: body.userIdentifier,
+      privilege: body.privilege,
+      action: body.action,
+    });
+
+    return { message: 'Permissão atualizada com sucesso.' };
   }
 }

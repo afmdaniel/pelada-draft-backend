@@ -30,11 +30,6 @@ export class PeladaAccessGuard implements CanActivate {
 
     if (user.role === 'ADMIN') return true;
 
-    const requiredPrivilege = this.reflector.get<PeladaPrivilege>(
-      PRIVILEGE_KEY,
-      context.getHandler(),
-    );
-
     const peladaId = request.params.peladaId;
     if (!peladaId) return true;
 
@@ -48,30 +43,29 @@ export class PeladaAccessGuard implements CanActivate {
 
     if (pelada.ownerId === user.sub) return true;
 
-    if (requiredPrivilege) {
-      const hasPermission = await this.prisma.peladaPermission.findFirst({
-        where: {
-          userId: user.sub,
-          peladaId: pelada.id,
-          privilege: {
-            in: [requiredPrivilege, PeladaPrivilege.FULL_ACCESS],
-          },
+    const requiredPrivileges = this.reflector.get<PeladaPrivilege[]>(
+      PRIVILEGE_KEY,
+      context.getHandler(),
+    );
+
+    if (!requiredPrivileges || requiredPrivileges.length === 0) {
+      throw new ForbiddenException('Você não tem acesso a esta pelada.');
+    }
+
+    const hasPermission = await this.prisma.peladaPermission.findFirst({
+      where: {
+        userId: user.sub,
+        peladaId: pelada.id,
+        privilege: {
+          in: requiredPrivileges,
         },
-      });
+      },
+    });
 
-      if (!hasPermission) {
-        throw new ForbiddenException(
-          'Você não tem permissão para realizar esta ação nesta pelada.',
-        );
-      }
-    } else {
-      const hasAnyPermission = await this.prisma.peladaPermission.findFirst({
-        where: { userId: user.sub, peladaId: pelada.id },
-      });
-
-      if (!hasAnyPermission) {
-        throw new ForbiddenException('Você não tem acesso a esta pelada.');
-      }
+    if (!hasPermission) {
+      throw new ForbiddenException(
+        'Você não tem permissão para realizar esta ação nesta pelada.',
+      );
     }
 
     return true;

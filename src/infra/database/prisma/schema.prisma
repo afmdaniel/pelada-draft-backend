@@ -22,7 +22,6 @@ enum GlobalRole {
 enum PeladaPrivilege {
   MANAGE_PLAYERS
   DRAW_TEAMS
-  FULL_ACCESS
 }
 
 model User {

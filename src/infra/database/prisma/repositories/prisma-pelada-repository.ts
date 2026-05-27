@@ -5,6 +5,11 @@ import { Player } from '../../../../core/entities/player.entity';
 import { Pelada } from '../../../../core/entities/pelada.entity';
 import { PrismaPlayerMapper } from '../mappers/prisma-player-mapper';
 import { PrismaPeladaMapper } from '../mappers/prisma-pelada-mapper';
+import {
+  PeladaPermission,
+  type PlayerPrivilege,
+} from '../../../../core/entities/pelada-permission.entity';
+import { PrismaPeladaPermissionMapper } from '../mappers/prisma-pelada-permission-mapper';
 
 @Injectable()
 export class PrismaPeladaRepository extends PeladaRepository {
@@ -70,5 +75,50 @@ export class PrismaPeladaRepository extends PeladaRepository {
     });
 
     return raw.map((pelada) => PrismaPeladaMapper.toDomain(pelada));
+  }
+
+  async findPermission(
+    permission: PeladaPermission,
+  ): Promise<PeladaPermission | null> {
+    const raw = await this.prisma.peladaPermission.findUnique({
+      where: {
+        userId_peladaId_privilege: {
+          userId: permission.userId,
+          peladaId: permission.peladaId,
+          privilege: permission.privilege,
+        },
+      },
+    });
+
+    if (!raw) {
+      return null;
+    }
+
+    return PrismaPeladaPermissionMapper.toDomain(raw);
+  }
+
+  async assignPermissions(permissions: PeladaPermission[]): Promise<void> {
+    const rawPermissions = permissions.map((permission) =>
+      PrismaPeladaPermissionMapper.toPrisma(permission),
+    );
+
+    await this.prisma.peladaPermission.createMany({
+      data: rawPermissions,
+      skipDuplicates: true,
+    });
+  }
+
+  async revokePermissions(
+    userId: string,
+    peladaId: string,
+    privileges: PlayerPrivilege[],
+  ): Promise<void> {
+    await this.prisma.peladaPermission.deleteMany({
+      where: {
+        userId,
+        peladaId,
+        privilege: { in: privileges },
+      },
+    });
   }
 }
