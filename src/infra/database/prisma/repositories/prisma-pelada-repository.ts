@@ -12,6 +12,7 @@ import {
 import { PrismaPeladaPermissionMapper } from '../mappers/prisma-pelada-permission-mapper';
 import { PeladaWithPermissions } from '../../../../core/dtos/pelada-with-permissions.dto';
 import { GlobalRole, Prisma } from '../../generated/prisma/client';
+import { PeladaDetails } from '../../../../core/dtos/pelada-details.dto';
 
 @Injectable()
 export class PrismaPeladaRepository extends PeladaRepository {
@@ -56,6 +57,30 @@ export class PrismaPeladaRepository extends PeladaRepository {
     }
 
     return PrismaPeladaMapper.toDomain(peladaRaw);
+  }
+
+  async findDetailsById(
+    peladaId: string,
+    currentUserId: string,
+  ): Promise<PeladaDetails | null> {
+    const raw = await this.prisma.pelada.findUnique({
+      where: { id: peladaId },
+      include: {
+        owner: { select: { username: true } },
+        players: {
+          select: { id: true, name: true, stars: true, position: true },
+          orderBy: { name: 'asc' },
+        },
+        permissions: {
+          where: { userId: currentUserId },
+          select: { privilege: true },
+        },
+      },
+    });
+
+    if (!raw) return null;
+
+    return PrismaPeladaMapper.toDomainWithDetails(raw);
   }
 
   async findManyByUserId(

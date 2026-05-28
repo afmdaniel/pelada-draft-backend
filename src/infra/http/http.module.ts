@@ -18,6 +18,7 @@ import { RefreshAccessToken } from '../../core/use-cases/refresh-access-token';
 import { LogoutUser } from '../../core/use-cases/logout-user';
 import { ManagePeladaPermission } from '../../core/use-cases/manage-pelada-permission';
 import { FetchUserPeladas } from '../../core/use-cases/fetch-user-peladas';
+import { GetPeladaById } from '../../core/use-cases/get-pelada-by-id';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { FetchUserPeladas } from '../../core/use-cases/fetch-user-peladas';
     LogoutUser,
     ManagePeladaPermission,
     FetchUserPeladas,
+    GetPeladaById,
     {
       provide: HashGenerator,
       useClass: BcryptGenerator,

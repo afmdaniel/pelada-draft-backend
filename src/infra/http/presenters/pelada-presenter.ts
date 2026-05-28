@@ -1,5 +1,8 @@
+import { PeladaDetails } from '../../../core/dtos/pelada-details.dto';
 import { PeladaWithPermissions } from '../../../core/dtos/pelada-with-permissions.dto';
 import { Pelada } from '../../../core/entities/pelada.entity';
+import { Player } from '../../../core/entities/player.entity';
+import { PlayerPresenter } from './player-presenter';
 
 export class PeladaPresenter {
   static toHTTP(pelada: Pelada) {
@@ -16,6 +19,18 @@ export class PeladaPresenter {
       name: pelada.name,
       ownerUsername: pelada.ownerUsername,
       privileges: pelada.privileges,
+    };
+  }
+
+  static toHTTPWithDetails(pelada: PeladaDetails) {
+    return {
+      id: pelada.id,
+      name: pelada.name,
+      ownerUsername: pelada.ownerUsername,
+      privileges: pelada.privileges,
+      players: pelada.players.map((player) =>
+        PlayerPresenter.toSummaryHTTP(player as Player),
+      ),
     };
   }
 }

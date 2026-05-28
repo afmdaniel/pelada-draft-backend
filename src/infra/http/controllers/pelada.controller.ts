@@ -18,6 +18,7 @@ import type { JwtPayload } from '../guards/auth.guard';
 import { PeladaAccessGuard } from '../guards/pelada-access.guard';
 import { PeladaPrivilege } from '../../database/generated/prisma/enums';
 import { FetchUserPeladas } from '../../../core/use-cases/fetch-user-peladas';
+import { GetPeladaById } from '../../../core/use-cases/get-pelada-by-id';
 
 @Controller('peladas')
 @UseGuards(AuthGuard, PeladaAccessGuard)
@@ -29,6 +30,7 @@ export class PeladaController {
     private drawTeams: DrawTeams,
     private managePeladaPermission: ManagePeladaPermission,
     private fetchUserPeladas: FetchUserPeladas,
+    private getPeladaById: GetPeladaById,
   ) {}
 
   @Post()
@@ -58,6 +60,21 @@ export class PeladaController {
         PeladaPresenter.toHTTPWithPermissions(pelada),
       ),
     };
+  }
+
+  @Get(':peladaId')
+  @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS, PeladaPrivilege.DRAW_TEAMS)
+  async getById(
+    @Param('peladaId') peladaId: string,
+    @CurrentUser() user: JwtPayload, // 🎯 Captura o usuário logado
+  ) {
+    const peladaDetails = await this.getPeladaById.execute({
+      peladaId,
+      currentUserId: user.sub,
+      currentUserRole: user.role,
+    });
+
+    return { pelada: PeladaPresenter.toHTTPWithDetails(peladaDetails) };
   }
 
   @Post(':peladaId/players')

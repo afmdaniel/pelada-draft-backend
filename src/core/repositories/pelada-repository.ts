@@ -1,3 +1,4 @@
+import { PeladaDetails } from '../dtos/pelada-details.dto';
 import { PeladaWithPermissions } from '../dtos/pelada-with-permissions.dto';
 import {
   PeladaPermission,
@@ -9,6 +10,10 @@ import { Player } from '../entities/player.entity';
 export abstract class PeladaRepository {
   abstract create(pelada: Pelada): Promise<void>;
   abstract findById(id: string): Promise<Pelada | null>;
+  abstract findDetailsById(
+    peladaId: string,
+    currentUserId: string,
+  ): Promise<PeladaDetails | null>;
   abstract findManyByUserId(
     userId: string,
     userRole: string,
