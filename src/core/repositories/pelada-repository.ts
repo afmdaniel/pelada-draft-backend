@@ -1,6 +1,7 @@
+import { PeladaWithPermissions } from '../dtos/pelada-with-permissions.dto';
 import {
   PeladaPermission,
-  type PlayerPrivilege,
+  type PeladaPrivilege,
 } from '../entities/pelada-permission.entity';
 import { Pelada } from '../entities/pelada.entity';
 import { Player } from '../entities/player.entity';
@@ -8,7 +9,10 @@ import { Player } from '../entities/player.entity';
 export abstract class PeladaRepository {
   abstract create(pelada: Pelada): Promise<void>;
   abstract findById(id: string): Promise<Pelada | null>;
-  abstract findManyByUserId(userId: string): Promise<Pelada[]>;
+  abstract findManyByUserId(
+    userId: string,
+    userRole: string,
+  ): Promise<PeladaWithPermissions[]>;
   abstract addPlayer(player: Player): Promise<void>;
   abstract findManyPlayersByPeladaId(peladaId: string): Promise<Player[]>;
   abstract findPermission(
@@ -18,6 +22,6 @@ export abstract class PeladaRepository {
   abstract revokePermissions(
     userId: string,
     peladaId: string,
-    privileges: PlayerPrivilege[],
+    privileges: PeladaPrivilege[],
   ): Promise<void>;
 }

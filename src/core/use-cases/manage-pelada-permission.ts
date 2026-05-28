@@ -5,8 +5,11 @@ import {
 } from '@nestjs/common';
 import { PeladaRepository } from '../repositories/pelada-repository';
 import { UserRepository } from '../repositories/user-repository';
-import { PeladaPrivilege } from '../../infra/database/generated/prisma/enums';
-import { PeladaPermission } from '../entities/pelada-permission.entity';
+import {
+  PELADA_PRIVILEGES,
+  PeladaPermission,
+  PeladaPrivilege,
+} from '../entities/pelada-permission.entity';
 
 interface ManagePermissionInput {
   peladaId: string;
@@ -47,7 +50,7 @@ export class ManagePeladaPermission {
 
     const privilegesToProcess =
       input.privilege === 'ALL'
-        ? Object.values(PeladaPrivilege)
+        ? Object.values(PELADA_PRIVILEGES)
         : [input.privilege];
 
     const peladaPermissions = privilegesToProcess.map(

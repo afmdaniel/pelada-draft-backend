@@ -1,10 +1,16 @@
-export type PlayerPrivilege = 'DRAW_TEAMS' | 'MANAGE_PLAYERS';
+export const PELADA_PRIVILEGES = {
+  DRAW_TEAMS: 'DRAW_TEAMS',
+  MANAGE_PLAYERS: 'MANAGE_PLAYERS',
+} as const;
+
+export type PeladaPrivilege =
+  (typeof PELADA_PRIVILEGES)[keyof typeof PELADA_PRIVILEGES];
 
 export interface PeladaPermissionProps {
   id?: string;
   userId: string;
   peladaId: string;
-  privilege: PlayerPrivilege;
+  privilege: PeladaPrivilege;
 }
 
 export class PeladaPermission {

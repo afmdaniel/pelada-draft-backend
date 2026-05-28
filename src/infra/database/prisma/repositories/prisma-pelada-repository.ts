@@ -7,9 +7,11 @@ import { PrismaPlayerMapper } from '../mappers/prisma-player-mapper';
 import { PrismaPeladaMapper } from '../mappers/prisma-pelada-mapper';
 import {
   PeladaPermission,
-  type PlayerPrivilege,
+  type PeladaPrivilege,
 } from '../../../../core/entities/pelada-permission.entity';
 import { PrismaPeladaPermissionMapper } from '../mappers/prisma-pelada-permission-mapper';
+import { PeladaWithPermissions } from '../../../../core/dtos/pelada-with-permissions.dto';
+import { GlobalRole, Prisma } from '../../generated/prisma/client';
 
 @Injectable()
 export class PrismaPeladaRepository extends PeladaRepository {
@@ -56,25 +58,51 @@ export class PrismaPeladaRepository extends PeladaRepository {
     return PrismaPeladaMapper.toDomain(peladaRaw);
   }
 
-  async findManyByUserId(userId: string): Promise<Pelada[]> {
-    const raw = await this.prisma.pelada.findMany({
-      where: {
-        OR: [
-          {
-            ownerId: userId,
-          },
-          {
-            permissions: {
-              some: {
-                userId,
+  async findManyByUserId(
+    userId: string,
+    userRole: string,
+  ): Promise<PeladaWithPermissions[]> {
+    const whereCondition: Prisma.PeladaWhereInput =
+      userRole === GlobalRole.ADMIN
+        ? {}
+        : {
+            OR: [
+              {
+                ownerId: userId,
               },
-            },
+              {
+                permissions: {
+                  some: {
+                    userId,
+                  },
+                },
+              },
+            ],
+          };
+
+    const raw = await this.prisma.pelada.findMany({
+      where: whereCondition,
+      include: {
+        owner: {
+          select: {
+            username: true,
           },
-        ],
+        },
+        permissions: {
+          where: {
+            userId: userId,
+          },
+          select: {
+            privilege: true,
+          },
+        },
       },
+      orderBy: { name: 'asc' },
     });
 
-    return raw.map((pelada) => PrismaPeladaMapper.toDomain(pelada));
+    return raw.map((pelada) =>
+      PrismaPeladaMapper.toDomainWithPermissions(pelada),
+    );
   }
 
   async findPermission(
@@ -111,7 +139,7 @@ export class PrismaPeladaRepository extends PeladaRepository {
   async revokePermissions(
     userId: string,
     peladaId: string,
-    privileges: PlayerPrivilege[],
+    privileges: PeladaPrivilege[],
   ): Promise<void> {
     await this.prisma.peladaPermission.deleteMany({
       where: {
