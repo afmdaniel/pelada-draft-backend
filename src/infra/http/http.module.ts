@@ -19,6 +19,10 @@ import { LogoutUser } from '../../core/use-cases/logout-user';
 import { ManagePeladaPermission } from '../../core/use-cases/manage-pelada-permission';
 import { FetchUserPeladas } from '../../core/use-cases/fetch-user-peladas';
 import { GetPeladaById } from '../../core/use-cases/get-pelada-by-id';
+import { UpdatePelada } from '../../core/use-cases/update-pelada';
+import { DeletePelada } from '../../core/use-cases/detele-pelada';
+import { UpdatePlayer } from '../../core/use-cases/update-player';
+import { DeletePlayer } from '../../core/use-cases/delete-player';
 
 @Module({
   imports: [
@@ -32,6 +36,8 @@ import { GetPeladaById } from '../../core/use-cases/get-pelada-by-id';
   controllers: [PeladaController, AuthController],
   providers: [
     CreatePelada,
+    UpdatePelada,
+    DeletePelada,
     AddPlayerToPelada,
     GetPlayersByPelada,
     DrawTeams,
@@ -43,6 +49,8 @@ import { GetPeladaById } from '../../core/use-cases/get-pelada-by-id';
     ManagePeladaPermission,
     FetchUserPeladas,
     GetPeladaById,
+    UpdatePlayer,
+    DeletePlayer,
     {
       provide: HashGenerator,
       useClass: BcryptGenerator,

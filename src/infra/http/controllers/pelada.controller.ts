@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { AddPlayerToPelada } from '../../../core/use-cases/add-player-to-pelada';
 import { GetPlayersByPelada } from '../../../core/use-cases/get-player-by-pelada';
 import { DrawTeams } from '../../../core/use-cases/draw-teams';
@@ -19,18 +28,28 @@ import { PeladaAccessGuard } from '../guards/pelada-access.guard';
 import { PeladaPrivilege } from '../../database/generated/prisma/enums';
 import { FetchUserPeladas } from '../../../core/use-cases/fetch-user-peladas';
 import { GetPeladaById } from '../../../core/use-cases/get-pelada-by-id';
+import { UpdatePelada } from '../../../core/use-cases/update-pelada';
+import { UpdatePeladaBody } from '../dtos/update-pelada-body';
+import { DeletePelada } from '../../../core/use-cases/detele-pelada';
+import { UpdatePlayer } from '../../../core/use-cases/update-player';
+import { UpdatePlayerBody } from '../dtos/update-player-body';
+import { DeletePlayer } from '../../../core/use-cases/delete-player';
 
 @Controller('peladas')
 @UseGuards(AuthGuard, PeladaAccessGuard)
 export class PeladaController {
   constructor(
     private createPelada: CreatePelada,
+    private updatePelada: UpdatePelada,
+    private deletePelada: DeletePelada,
     private addPlayerToPelada: AddPlayerToPelada,
     private getPlayersByPelada: GetPlayersByPelada,
     private drawTeams: DrawTeams,
     private managePeladaPermission: ManagePeladaPermission,
     private fetchUserPeladas: FetchUserPeladas,
     private getPeladaById: GetPeladaById,
+    private updatePlayer: UpdatePlayer,
+    private deletePlayer: DeletePlayer,
   ) {}
 
   @Post()
@@ -66,7 +85,7 @@ export class PeladaController {
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS, PeladaPrivilege.DRAW_TEAMS)
   async getById(
     @Param('peladaId') peladaId: string,
-    @CurrentUser() user: JwtPayload, // 🎯 Captura o usuário logado
+    @CurrentUser() user: JwtPayload,
   ) {
     const peladaDetails = await this.getPeladaById.execute({
       peladaId,
@@ -75,6 +94,28 @@ export class PeladaController {
     });
 
     return { pelada: PeladaPresenter.toHTTPWithDetails(peladaDetails) };
+  }
+
+  @Put(':peladaId')
+  async update(
+    @Param('peladaId') peladaId: string,
+    @Body() body: UpdatePeladaBody,
+  ) {
+    const pelada = await this.updatePelada.execute({
+      peladaId,
+      name: body.name,
+    });
+
+    return {
+      pelada: PeladaPresenter.toHTTP(pelada),
+    };
+  }
+
+  @Delete(':peladaId')
+  async delete(@Param('peladaId') peladaId: string) {
+    await this.deletePelada.execute({ peladaId });
+
+    return { message: 'Pelada deletada com sucesso.' };
   }
 
   @Post(':peladaId/players')
@@ -107,6 +148,38 @@ export class PeladaController {
     return {
       players: players.map((player) => PlayerPresenter.toHTTP(player)),
     };
+  }
+
+  @Put(':peladaId/players/:playerId')
+  @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
+  async editPlayer(
+    @Param('peladaId') peladaId: string,
+    @Param('playerId') playerId: string,
+    @Body() body: UpdatePlayerBody,
+  ) {
+    const player = await this.updatePlayer.execute({
+      peladaId,
+      playerId,
+      name: body.name,
+      stars: body.stars,
+      position: body.position,
+    });
+
+    return { player: PlayerPresenter.toHTTP(player) };
+  }
+
+  @Delete(':peladaId/players/:playerId')
+  @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
+  async removePlayer(
+    @Param('peladaId') peladaId: string,
+    @Param('playerId') playerId: string,
+  ) {
+    await this.deletePlayer.execute({
+      peladaId,
+      playerId,
+    });
+
+    return { message: 'Jogador removido com sucesso.' };
   }
 
   @Post(':peladaId/draw')

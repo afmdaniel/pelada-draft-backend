@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service'; // Você precisará criar este service simples do Nest
+import { PrismaService } from '../prisma.service';
 import { PeladaRepository } from '../../../../core/repositories/pelada-repository';
 import { Player } from '../../../../core/entities/player.entity';
 import { Pelada } from '../../../../core/entities/pelada.entity';
@@ -20,27 +20,28 @@ export class PrismaPeladaRepository extends PeladaRepository {
     super();
   }
 
-  async addPlayer(player: Player): Promise<void> {
-    const raw = PrismaPlayerMapper.toPrisma(player);
-
-    await this.prisma.player.create({
-      data: raw,
-    });
-  }
-
-  async findManyPlayersByPeladaId(peladaId: string): Promise<Player[]> {
-    const playersRaw = await this.prisma.player.findMany({
-      where: { peladaId },
-    });
-
-    return playersRaw.map((player) => PrismaPlayerMapper.toDomain(player));
-  }
-
   async create(pelada: Pelada): Promise<void> {
     const raw = PrismaPeladaMapper.toPrisma(pelada);
 
     await this.prisma.pelada.create({
       data: raw,
+    });
+  }
+
+  async update(pelada: Pelada): Promise<void> {
+    const raw = PrismaPeladaMapper.toPrisma(pelada);
+
+    await this.prisma.pelada.update({
+      where: { id: pelada.id! },
+      data: {
+        name: raw.name,
+      },
+    });
+  }
+
+  async delete(peladaId: string): Promise<void> {
+    await this.prisma.pelada.delete({
+      where: { id: peladaId },
     });
   }
 
@@ -57,6 +58,50 @@ export class PrismaPeladaRepository extends PeladaRepository {
     }
 
     return PrismaPeladaMapper.toDomain(peladaRaw);
+  }
+
+  async addPlayer(player: Player): Promise<void> {
+    const raw = PrismaPlayerMapper.toPrisma(player);
+
+    await this.prisma.player.create({
+      data: raw,
+    });
+  }
+
+  async findManyPlayersByPeladaId(peladaId: string): Promise<Player[]> {
+    const playersRaw = await this.prisma.player.findMany({
+      where: { peladaId },
+      orderBy: { name: 'asc' },
+    });
+
+    return playersRaw.map((player) => PrismaPlayerMapper.toDomain(player));
+  }
+
+  async findPlayerById(playerId: string): Promise<Player | null> {
+    const raw = await this.prisma.player.findUnique({
+      where: { id: playerId },
+    });
+
+    if (!raw) {
+      return null;
+    }
+
+    return PrismaPlayerMapper.toDomain(raw);
+  }
+
+  async updatePlayer(player: Player): Promise<void> {
+    const raw = PrismaPlayerMapper.toPrisma(player);
+
+    await this.prisma.player.update({
+      where: { id: player.id! },
+      data: raw,
+    });
+  }
+
+  async deletePlayer(playerId: string): Promise<void> {
+    await this.prisma.player.delete({
+      where: { id: playerId },
+    });
   }
 
   async findDetailsById(

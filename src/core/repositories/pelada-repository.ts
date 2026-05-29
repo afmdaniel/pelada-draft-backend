@@ -9,6 +9,8 @@ import { Player } from '../entities/player.entity';
 
 export abstract class PeladaRepository {
   abstract create(pelada: Pelada): Promise<void>;
+  abstract update(pelada: Pelada): Promise<void>;
+  abstract delete(peladaId: string): Promise<void>;
   abstract findById(id: string): Promise<Pelada | null>;
   abstract findDetailsById(
     peladaId: string,
@@ -19,6 +21,9 @@ export abstract class PeladaRepository {
     userRole: string,
   ): Promise<PeladaWithPermissions[]>;
   abstract addPlayer(player: Player): Promise<void>;
+  abstract findPlayerById(playerId: string): Promise<Player | null>;
+  abstract updatePlayer(player: Player): Promise<void>;
+  abstract deletePlayer(playerId: string): Promise<void>;
   abstract findManyPlayersByPeladaId(peladaId: string): Promise<Player[]>;
   abstract findPermission(
     premission: PeladaPermission,
