@@ -23,6 +23,9 @@ import { UpdatePelada } from '../../core/use-cases/update-pelada';
 import { DeletePelada } from '../../core/use-cases/detele-pelada';
 import { UpdatePlayer } from '../../core/use-cases/update-player';
 import { DeletePlayer } from '../../core/use-cases/delete-player';
+import { PeladaPlayerController } from './controllers/pelada-player.controller';
+import { PeladaPermissionController } from './controllers/pelada-permission.controller';
+import { PeladaDrawController } from './controllers/pelada-draw.controller';
 
 @Module({
   imports: [
@@ -33,7 +36,13 @@ import { DeletePlayer } from '../../core/use-cases/delete-player';
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  controllers: [PeladaController, AuthController],
+  controllers: [
+    PeladaController,
+    PeladaPlayerController,
+    PeladaPermissionController,
+    PeladaDrawController,
+    AuthController,
+  ],
   providers: [
     CreatePelada,
     UpdatePelada,
