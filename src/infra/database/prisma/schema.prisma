@@ -24,6 +24,13 @@ enum PeladaPrivilege {
   DRAW_TEAMS
 }
 
+enum PlayerPosition {
+  ZAGA
+  MEIO
+  ATAQUE
+  GERAL
+}
+
 model User {
   id          String             @id @default(uuid())
   email       String             @unique
@@ -63,7 +70,7 @@ model Player {
   id        String   @id @default(uuid())
   name      String
   stars     Int
-  position  String   @default("Geral")
+  position  PlayerPosition   @default(GERAL)
   peladaId  String
   pelada    Pelada   @relation(fields: [peladaId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

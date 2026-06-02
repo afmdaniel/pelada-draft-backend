@@ -1,4 +1,4 @@
-export type PlayerPosition = 'Zaga' | 'Meio' | 'Ataque' | 'Geral';
+import { PlayerPosition } from '../constants/player-position';
 
 export interface PlayerProps {
   id?: string;
@@ -17,7 +17,7 @@ export class Player {
     this.props = {
       ...props,
       id: props.id ?? crypto.randomUUID(),
-      position: props.position ?? 'Geral',
+      position: props.position ?? PlayerPosition.GERAL,
     };
   }
 

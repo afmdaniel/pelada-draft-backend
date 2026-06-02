@@ -5,7 +5,9 @@ import {
   IsString,
   Max,
   Min,
+  IsEnum,
 } from 'class-validator';
+import { PlayerPosition } from '../../../core/constants/player-position';
 
 export class CreatePlayerBody {
   @IsNotEmpty()
@@ -18,6 +20,6 @@ export class CreatePlayerBody {
   stars!: number;
 
   @IsOptional()
-  @IsString()
-  position?: 'Zaga' | 'Meio' | 'Ataque' | 'Geral';
+  @IsEnum(PlayerPosition, { message: 'Posição inválida.' })
+  position?: PlayerPosition;
 }

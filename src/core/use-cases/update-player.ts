@@ -4,7 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PeladaRepository } from '../repositories/pelada-repository';
-import { Player, PlayerPosition } from '../entities/player.entity';
+import { Player } from '../entities/player.entity';
+import { PlayerPosition } from '../constants/player-position';
 
 interface UpdatePlayerInput {
   peladaId: string;

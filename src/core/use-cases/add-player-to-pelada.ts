@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Player } from '../entities/player.entity';
 import { PeladaRepository } from '../repositories/pelada-repository';
+import { PlayerPosition } from '../constants/player-position';
 
 interface AddPlayerInput {
   name: string;
   stars: number;
-  position?: 'Zaga' | 'Meio' | 'Ataque' | 'Geral';
+  position?: PlayerPosition;
   peladaId: string;
 }
 
