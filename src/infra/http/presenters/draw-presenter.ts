@@ -1,4 +1,4 @@
-import { Player } from '../../../core/entities/player.entity';
+import { Team } from '../../../core/domain/entities/team.entity';
 import { PlayerPresenter } from './player-presenter';
 
 export interface DrawHTTPResponse {
@@ -7,13 +7,11 @@ export interface DrawHTTPResponse {
 }
 
 export class DrawPresenter {
-  static toHTTP(teams: Player[][]): DrawHTTPResponse[] {
+  static toHTTP(teams: Team[]): DrawHTTPResponse[] {
     return teams.map((team) => {
-      const totalStars = team.reduce((acc, player) => acc + player.stars, 0);
-
       return {
-        totalStars,
-        players: team.map((t) => PlayerPresenter.toSummaryHTTP(t)),
+        totalStars: team.totalStars,
+        players: team.players.map((t) => PlayerPresenter.toSummaryHTTP(t)),
       };
     });
   }
