@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Player } from '../../domain/entities/player.entity';
 import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 import { PlayerPosition } from '../../domain/constants/player-position';
@@ -19,6 +19,18 @@ export class AddPlayerToPelada {
 
     if (!pelada) {
       throw new Error('Pelada não encontrada.');
+    }
+
+    const playerAlreadyExists =
+      await this.peladaRepository.findPlayerByNameAndPeladaId(
+        input.name,
+        input.peladaId,
+      );
+
+    if (playerAlreadyExists) {
+      throw new ConflictException(
+        'Já existe um jogador cadastrado com este nome nesta pelada.',
+      );
     }
 
     const player = new Player({

@@ -17,8 +17,9 @@ export class CreatePlayerBody {
   @Length(2, 40, {
     message: 'O nome do jogador deve ter entre 2 e 40 caracteres.',
   })
-  @Matches(/^[a-zA-Z0-9À-ÿ ]+$/, {
-    message: 'O nome do jogador não pode conter caracteres especiais.',
+  @Matches(/^[a-zA-ZÀ-ÿ ]+$/, {
+    message:
+      'O nome do jogador não pode conter números ou caracteres especiais.',
   })
   name!: string;
 

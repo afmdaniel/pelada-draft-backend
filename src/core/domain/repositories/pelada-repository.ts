@@ -22,6 +22,10 @@ export abstract class PeladaRepository {
   ): Promise<PeladaWithPermissions[]>;
   abstract addPlayer(player: Player): Promise<void>;
   abstract findPlayerById(playerId: string): Promise<Player | null>;
+  abstract findPlayerByNameAndPeladaId(
+    name: string,
+    peladaId: string,
+  ): Promise<Player | null>;
   abstract updatePlayer(player: Player): Promise<void>;
   abstract deletePlayer(playerId: string): Promise<void>;
   abstract findManyPlayersByPeladaId(peladaId: string): Promise<Player[]>;

@@ -89,6 +89,21 @@ export class PrismaPeladaRepository extends PeladaRepository {
     return PrismaPlayerMapper.toDomain(raw);
   }
 
+  async findPlayerByNameAndPeladaId(
+    name: string,
+    peladaId: string,
+  ): Promise<Player | null> {
+    const raw = await this.prisma.player.findUnique({
+      where: { peladaId_name: { name, peladaId } },
+    });
+
+    if (!raw) {
+      return null;
+    }
+
+    return PrismaPlayerMapper.toDomain(raw);
+  }
+
   async updatePlayer(player: Player): Promise<void> {
     const raw = PrismaPlayerMapper.toPrisma(player);
 

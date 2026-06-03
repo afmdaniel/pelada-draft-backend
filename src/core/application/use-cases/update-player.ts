@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -26,6 +27,18 @@ export class UpdatePlayer {
 
     if (player.peladaId !== input.peladaId)
       throw new BadRequestException('Esse jogador não pertence a essa pelada.');
+
+    const playerAlreadyExists =
+      await this.peladaRepository.findPlayerByNameAndPeladaId(
+        input.name,
+        input.peladaId,
+      );
+
+    if (playerAlreadyExists) {
+      throw new ConflictException(
+        'Já existe um jogador cadastrado com este nome nesta pelada.',
+      );
+    }
 
     const newPlayer = new Player({
       id: input.playerId,
