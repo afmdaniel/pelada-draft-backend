@@ -3,9 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PeladaRepository } from '../repositories/pelada-repository';
-import { Player } from '../entities/player.entity';
-import { PlayerPosition } from '../constants/player-position';
+import { PeladaRepository } from '../../domain/repositories/pelada-repository';
+import { Player } from '../../domain/entities/player.entity';
+import { PlayerPosition } from '../../domain/constants/player-position';
 
 interface UpdatePlayerInput {
   peladaId: string;

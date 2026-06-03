@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { DrawTeams } from '../../../core/use-cases/draw-teams';
+import { DrawTeams } from '../../../core/application/use-cases/draw-teams';
 import { DrawTeamsBody } from '../dtos/draw-teams-body';
 import { DrawPresenter } from '../presenters/draw-presenter';
 import { RequirePrivilege } from '../decorators/require-privilege.decorator';

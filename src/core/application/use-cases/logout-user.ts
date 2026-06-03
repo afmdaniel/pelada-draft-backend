@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { RefreshTokenRepository } from '../repositories/refresh-token-repository';
-import { Encrypter } from '../services/encrypter';
-import { authConfig } from '../../infra/config/auth';
+import { RefreshTokenRepository } from '../../domain/repositories/refresh-token-repository';
+import { Encrypter } from '../../domain/services/encrypter';
+import { authConfig } from '../../../infra/config/auth';
 
 interface LogoutUserInput {
   refreshToken: string;

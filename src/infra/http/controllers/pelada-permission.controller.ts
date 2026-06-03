@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { ManagePeladaPermission } from '../../../core/use-cases/manage-pelada-permission';
+import { ManagePeladaPermission } from '../../../core/application/use-cases/manage-pelada-permission';
 import { ManagePermissionBody } from '../dtos/manage-permission-body';
 import { AuthGuard } from '../guards/auth.guard';
 import { PeladaAccessGuard } from '../guards/pelada-access.guard';

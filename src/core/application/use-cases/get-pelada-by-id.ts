@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PeladaRepository } from '../repositories/pelada-repository';
+import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 import { PeladaDetails } from '../dtos/pelada-details.dto';
-import { PELADA_PRIVILEGES } from '../entities/pelada-permission.entity';
+import { PELADA_PRIVILEGES } from '../../domain/entities/pelada-permission.entity';
 
 interface GetPeladaByIdInput {
   peladaId: string;

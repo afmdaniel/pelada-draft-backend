@@ -6,9 +6,9 @@ import {
   Patch,
   UseGuards,
 } from '@nestjs/common';
-import { RegisterUser } from '../../../core/use-cases/register-user';
-import { AuthenticateUser } from '../../../core/use-cases/authenticate-user';
-import { ChangePassword } from '../../../core/use-cases/change-password';
+import { RegisterUser } from '../../../core/application/use-cases/register-user';
+import { AuthenticateUser } from '../../../core/application/use-cases/authenticate-user';
+import { ChangePassword } from '../../../core/application/use-cases/change-password';
 import { RegisterUserBody } from '../dtos/register-user-body';
 import { AuthenticateBody } from '../dtos/authenticate-body';
 import { ChangePasswordBody } from '../dtos/change-password-body';
@@ -16,8 +16,8 @@ import { UserPresenter } from '../presenters/user-presenter';
 import { AuthGuard } from '../guards/auth.guard';
 import { type JwtPayload } from '../guards/auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
-import { RefreshAccessToken } from '../../../core/use-cases/refresh-access-token';
-import { LogoutUser } from '../../../core/use-cases/logout-user';
+import { RefreshAccessToken } from '../../../core/application/use-cases/refresh-access-token';
+import { LogoutUser } from '../../../core/application/use-cases/logout-user';
 
 @Controller('auth')
 export class AuthController {

@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { PeladaRepository } from '../../../../core/repositories/pelada-repository';
-import { Player } from '../../../../core/entities/player.entity';
-import { Pelada } from '../../../../core/entities/pelada.entity';
+import { PeladaRepository } from '../../../../core/domain/repositories/pelada-repository';
+import { Player } from '../../../../core/domain/entities/player.entity';
+import { Pelada } from '../../../../core/domain/entities/pelada.entity';
 import { PrismaPlayerMapper } from '../mappers/prisma-player-mapper';
 import { PrismaPeladaMapper } from '../mappers/prisma-pelada-mapper';
 import {
   PeladaPermission,
   type PeladaPrivilege,
-} from '../../../../core/entities/pelada-permission.entity';
+} from '../../../../core/domain/entities/pelada-permission.entity';
 import { PrismaPeladaPermissionMapper } from '../mappers/prisma-pelada-permission-mapper';
-import { PeladaWithPermissions } from '../../../../core/dtos/pelada-with-permissions.dto';
+import { PeladaWithPermissions } from '../../../../core/application/dtos/pelada-with-permissions.dto';
 import { GlobalRole, Prisma } from '../../generated/prisma/client';
-import { PeladaDetails } from '../../../../core/dtos/pelada-details.dto';
+import { PeladaDetails } from '../../../../core/application/dtos/pelada-details.dto';
 
 @Injectable()
 export class PrismaPeladaRepository extends PeladaRepository {

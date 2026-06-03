@@ -1,6 +1,6 @@
 // src/infra/cryptography/bcrypt-generator.ts
 import { Injectable } from '@nestjs/common';
-import { HashGenerator } from '../../core/services/hash-generator';
+import { HashGenerator } from '../../core/domain/services/hash-generator';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

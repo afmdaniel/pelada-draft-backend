@@ -1,12 +1,12 @@
-import { Pelada as PeladaEntity } from '../../../../core/entities/pelada.entity';
+import { Pelada as PeladaEntity } from '../../../../core/domain/entities/pelada.entity';
 import {
   Player as PrismaPlayer,
   Pelada as PrismaPelada,
 } from '../../generated/prisma/client';
 import { PrismaPlayerMapper } from './prisma-player-mapper';
 import { Prisma } from '../../generated/prisma/client';
-import { PeladaWithPermissions } from '../../../../core/dtos/pelada-with-permissions.dto';
-import { PeladaDetails } from '../../../../core/dtos/pelada-details.dto';
+import { PeladaWithPermissions } from '../../../../core/application/dtos/pelada-with-permissions.dto';
+import { PeladaDetails } from '../../../../core/application/dtos/pelada-details.dto';
 
 type PrismaPeladaWithPlayers = PrismaPelada & { players?: PrismaPlayer[] };
 

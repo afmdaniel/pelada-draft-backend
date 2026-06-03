@@ -3,7 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { PeladaRepository } from '../repositories/pelada-repository';
+import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 
 interface DeletePlayerInput {
   playerId: string;

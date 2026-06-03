@@ -1,8 +1,8 @@
 // src/core/use-cases/register-user.ts
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../repositories/user-repository';
-import { HashGenerator } from '../services/hash-generator';
-import { User } from '../entities/user.entity';
+import { UserRepository } from '../../domain/repositories/user-repository';
+import { HashGenerator } from '../../domain/services/hash-generator';
+import { User } from '../../domain/entities/user.entity';
 
 interface RegisterUserInput {
   email: string;

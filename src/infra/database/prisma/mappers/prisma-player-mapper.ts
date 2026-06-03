@@ -1,6 +1,6 @@
 import { Player as PrismaPlayer } from '../../generated/prisma/client';
-import { Player as PlayerEntity } from '../../../../core/entities/player.entity';
-import { PlayerPosition } from '../../../../core/constants/player-position';
+import { Player as PlayerEntity } from '../../../../core/domain/entities/player.entity';
+import { PlayerPosition } from '../../../../core/domain/constants/player-position';
 
 export class PrismaPlayerMapper {
   static toDomain(raw: PrismaPlayer): PlayerEntity {

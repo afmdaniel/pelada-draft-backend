@@ -1,5 +1,5 @@
-import { PeladaDetails } from '../dtos/pelada-details.dto';
-import { PeladaWithPermissions } from '../dtos/pelada-with-permissions.dto';
+import { PeladaDetails } from '../../application/dtos/pelada-details.dto';
+import { PeladaWithPermissions } from '../../application/dtos/pelada-with-permissions.dto';
 import {
   PeladaPermission,
   type PeladaPrivilege,

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Player } from '../entities/player.entity';
-import { PeladaRepository } from '../repositories/pelada-repository';
-import { PlayerPosition } from '../constants/player-position';
+import { Player } from '../../domain/entities/player.entity';
+import { PeladaRepository } from '../../domain/repositories/pelada-repository';
+import { PlayerPosition } from '../../domain/constants/player-position';
 
 interface AddPlayerInput {
   name: string;

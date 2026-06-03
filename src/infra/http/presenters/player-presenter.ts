@@ -1,4 +1,4 @@
-import { Player } from '../../../core/entities/player.entity';
+import { Player } from '../../../core/domain/entities/player.entity';
 
 export class PlayerPresenter {
   static toHTTP(player: Player) {

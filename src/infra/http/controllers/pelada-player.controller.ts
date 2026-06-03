@@ -8,17 +8,17 @@ import {
   Delete,
   Put,
 } from '@nestjs/common';
-import { AddPlayerToPelada } from '../../../core/use-cases/add-player-to-pelada';
-import { GetPlayersByPelada } from '../../../core/use-cases/get-player-by-pelada';
+import { AddPlayerToPelada } from '../../../core/application/use-cases/add-player-to-pelada';
+import { GetPlayersByPelada } from '../../../core/application/use-cases/get-player-by-pelada';
 import { CreatePlayerBody } from '../dtos/create-player-body';
 import { PlayerPresenter } from '../presenters/player-presenter';
 import { RequirePrivilege } from '../decorators/require-privilege.decorator';
 import { AuthGuard } from '../guards/auth.guard';
 import { PeladaAccessGuard } from '../guards/pelada-access.guard';
 import { PeladaPrivilege } from '../../database/generated/prisma/enums';
-import { UpdatePlayer } from '../../../core/use-cases/update-player';
+import { UpdatePlayer } from '../../../core/application/use-cases/update-player';
 import { UpdatePlayerBody } from '../dtos/update-player-body';
-import { DeletePlayer } from '../../../core/use-cases/delete-player';
+import { DeletePlayer } from '../../../core/application/use-cases/delete-player';
 
 @Controller('peladas/:peladaId/players')
 @UseGuards(AuthGuard, PeladaAccessGuard)

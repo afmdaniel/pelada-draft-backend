@@ -3,13 +3,13 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { PeladaRepository } from '../repositories/pelada-repository';
-import { UserRepository } from '../repositories/user-repository';
+import { PeladaRepository } from '../../domain/repositories/pelada-repository';
+import { UserRepository } from '../../domain/repositories/user-repository';
 import {
   PELADA_PRIVILEGES,
   PeladaPermission,
   PeladaPrivilege,
-} from '../entities/pelada-permission.entity';
+} from '../../domain/entities/pelada-permission.entity';
 
 interface ManagePermissionInput {
   peladaId: string;

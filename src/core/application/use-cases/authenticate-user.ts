@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { JwtSignOptions } from '@nestjs/jwt';
 import ms, { StringValue } from 'ms';
-import { UserRepository } from '../repositories/user-repository';
-import { RefreshTokenRepository } from '../repositories/refresh-token-repository';
-import { HashGenerator } from '../services/hash-generator';
-import { Encrypter } from '../services/encrypter';
+import { UserRepository } from '../../domain/repositories/user-repository';
+import { RefreshTokenRepository } from '../../domain/repositories/refresh-token-repository';
+import { HashGenerator } from '../../domain/services/hash-generator';
+import { Encrypter } from '../../domain/services/encrypter';
 import { randomUUID } from 'crypto';
-import { authConfig } from '../../infra/config/auth';
-import { RefreshToken } from '../entities/refresh-token.entity';
+import { authConfig } from '../../../infra/config/auth';
+import { RefreshToken } from '../../domain/entities/refresh-token.entity';
 
 interface AuthenticateUserInput {
   identifier: string;

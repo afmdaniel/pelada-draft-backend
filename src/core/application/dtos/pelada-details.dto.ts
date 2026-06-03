@@ -1,4 +1,4 @@
-import { PeladaPrivilege } from '../entities/pelada-permission.entity';
+import { PeladaPrivilege } from '../../domain/entities/pelada-permission.entity';
 
 export type PeladaDetails = {
   id: string;

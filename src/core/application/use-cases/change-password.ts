@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../repositories/user-repository';
-import { HashGenerator } from '../services/hash-generator';
+import { UserRepository } from '../../domain/repositories/user-repository';
+import { HashGenerator } from '../../domain/services/hash-generator';
 
 interface ChangePasswordInput {
   userId: string;

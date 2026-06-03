@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PeladaRepository } from '../repositories/pelada-repository';
-import { Player } from '../entities/player.entity';
+import { PeladaRepository } from '../../domain/repositories/pelada-repository';
+import { Player } from '../../domain/entities/player.entity';
 
 interface GetPlayersByIdInput {
   playerId: string;

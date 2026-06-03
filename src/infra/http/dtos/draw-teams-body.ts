@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsString, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsString, Min } from 'class-validator';
 
 export class DrawTeamsBody {
   @IsArray()
@@ -8,4 +8,7 @@ export class DrawTeamsBody {
   @IsNumber()
   @Min(2)
   teamsQuantity!: number;
+
+  @IsBoolean()
+  withPosition!: boolean;
 }

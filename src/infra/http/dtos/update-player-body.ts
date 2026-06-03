@@ -7,7 +7,7 @@ import {
   Min,
   IsEnum,
 } from 'class-validator';
-import { PlayerPosition } from '../../../core/constants/player-position';
+import { PlayerPosition } from '../../../core/domain/constants/player-position';
 
 export class UpdatePlayerBody {
   @IsNotEmpty()

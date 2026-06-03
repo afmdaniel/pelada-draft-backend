@@ -1,7 +1,7 @@
-import { PeladaDetails } from '../../../core/dtos/pelada-details.dto';
-import { PeladaWithPermissions } from '../../../core/dtos/pelada-with-permissions.dto';
-import { Pelada } from '../../../core/entities/pelada.entity';
-import { Player } from '../../../core/entities/player.entity';
+import { PeladaDetails } from '../../../core/application/dtos/pelada-details.dto';
+import { PeladaWithPermissions } from '../../../core/application/dtos/pelada-with-permissions.dto';
+import { Pelada } from '../../../core/domain/entities/pelada.entity';
+import { Player } from '../../../core/domain/entities/player.entity';
 import { PlayerPresenter } from './player-presenter';
 
 export class PeladaPresenter {

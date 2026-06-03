@@ -2,11 +2,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtSignOptions } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import ms, { StringValue } from 'ms';
-import { UserRepository } from '../repositories/user-repository';
-import { RefreshTokenRepository } from '../repositories/refresh-token-repository';
-import { Encrypter } from '../services/encrypter';
-import { authConfig } from '../../infra/config/auth';
-import { RefreshToken } from '../entities/refresh-token.entity';
+import { UserRepository } from '../../domain/repositories/user-repository';
+import { RefreshTokenRepository } from '../../domain/repositories/refresh-token-repository';
+import { Encrypter } from '../../domain/services/encrypter';
+import { authConfig } from '../../../infra/config/auth';
+import { RefreshToken } from '../../domain/entities/refresh-token.entity';
 
 interface RefreshAccessTokenInput {
   refreshToken: string;

@@ -5,6 +5,10 @@ import { PositionLimits } from '../value-objects/position-limits';
 type PositionCounter = Record<PlayerPosition, number>;
 
 export class Team {
+  private readonly POSITIONS = Object.values(
+    PlayerPosition,
+  ) as PlayerPosition[];
+
   public players: Player[] = [];
 
   constructor(players: Player[] = []) {
@@ -24,8 +28,7 @@ export class Team {
   }
 
   get positionsCount(): PositionCounter {
-    const POSITIONS = Object.values(PlayerPosition) as PlayerPosition[];
-    const counts = POSITIONS.reduce((acc, pos) => {
+    const counts = this.POSITIONS.reduce((acc, pos) => {
       acc[pos] = 0;
       return acc;
     }, {} as PositionCounter);
@@ -40,11 +43,8 @@ export class Team {
 
   isInsideLimits(limits: PositionLimits): boolean {
     const counts = this.positionsCount;
-    const POSITIONS = Object.keys(PlayerPosition) as PlayerPosition[];
 
-    console.log(POSITIONS);
-
-    for (const position of POSITIONS) {
+    for (const position of this.POSITIONS) {
       const count = counts[position];
 
       if (count < limits.getMin(position) || count > limits.getMax(position)) {

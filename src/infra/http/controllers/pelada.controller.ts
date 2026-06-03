@@ -8,7 +8,7 @@ import {
   Delete,
   Put,
 } from '@nestjs/common';
-import { CreatePelada } from '../../../core/use-cases/create-pelada';
+import { CreatePelada } from '../../../core/application/use-cases/create-pelada';
 import { CreatePeladaBody } from '../dtos/create-pelada-body';
 import { PeladaPresenter } from '../presenters/pelada-presenter';
 import { CurrentUser } from '../decorators/current-user.decorator';
@@ -17,11 +17,11 @@ import { AuthGuard } from '../guards/auth.guard';
 import type { JwtPayload } from '../guards/auth.guard';
 import { PeladaAccessGuard } from '../guards/pelada-access.guard';
 import { PeladaPrivilege } from '../../database/generated/prisma/enums';
-import { FetchUserPeladas } from '../../../core/use-cases/fetch-user-peladas';
-import { GetPeladaById } from '../../../core/use-cases/get-pelada-by-id';
-import { UpdatePelada } from '../../../core/use-cases/update-pelada';
+import { FetchUserPeladas } from '../../../core/application/use-cases/fetch-user-peladas';
+import { GetPeladaById } from '../../../core/application/use-cases/get-pelada-by-id';
+import { UpdatePelada } from '../../../core/application/use-cases/update-pelada';
 import { UpdatePeladaBody } from '../dtos/update-pelada-body';
-import { DeletePelada } from '../../../core/use-cases/detele-pelada';
+import { DeletePelada } from '../../../core/application/use-cases/detele-pelada';
 
 @Controller('peladas')
 @UseGuards(AuthGuard, PeladaAccessGuard)
