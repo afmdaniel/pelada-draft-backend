@@ -34,7 +34,7 @@ export class UpdatePlayer {
         input.peladaId,
       );
 
-    if (playerAlreadyExists) {
+    if (playerAlreadyExists?.id !== input.playerId && playerAlreadyExists) {
       throw new ConflictException(
         'Já existe um jogador cadastrado com este nome nesta pelada.',
       );
