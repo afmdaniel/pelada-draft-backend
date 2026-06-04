@@ -1,7 +1,8 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { AppModule } from './app.module';
+import helmet from 'helmet';
 import { GlobalExceptionFilter } from './infra/http/filters/global-exception.filter';
 import { TransformInterceptor } from './infra/http/interceptors/transform.interceptor';
 
@@ -16,6 +17,12 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
+
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   const reflector = app.get(Reflector);
 
