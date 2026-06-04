@@ -7,6 +7,13 @@ import { TransformInterceptor } from './infra/http/interceptors/transform.interc
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   const reflector = app.get(Reflector);
 
   app.useGlobalFilters(new GlobalExceptionFilter());
