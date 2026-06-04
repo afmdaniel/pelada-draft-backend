@@ -3,10 +3,11 @@ import {
   GlobalRole as PrismaGlobalRole,
 } from '../../generated/prisma/client';
 import { User as UserEntity } from '../../../../core/domain/entities/user.entity';
+import { DataCorruptionError } from '../../../../core/domain/errors';
 
 export class PrismaUserMapper {
   static toDomain(raw: PrismaUser): UserEntity {
-    return new UserEntity(
+    const userOrError = UserEntity.create(
       {
         email: raw.email,
         username: raw.username,
@@ -15,6 +16,14 @@ export class PrismaUserMapper {
       },
       raw.id,
     );
+
+    if (userOrError.isFailure) {
+      throw new DataCorruptionError(
+        `Falha ao mapear User (ID: ${raw.id}). Motivo: ${userOrError.error.message}`,
+      );
+    }
+
+    return userOrError.value;
   }
 
   static toPrisma(user: UserEntity) {

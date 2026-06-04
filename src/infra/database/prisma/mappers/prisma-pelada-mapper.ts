@@ -5,8 +5,11 @@ import {
 } from '../../generated/prisma/client';
 import { PrismaPlayerMapper } from './prisma-player-mapper';
 import { Prisma } from '../../generated/prisma/client';
-import { PeladaWithPermissions } from '../../../../core/application/dtos/pelada-with-permissions.dto';
-import { PeladaDetails } from '../../../../core/application/dtos/pelada-details.dto';
+import {
+  PeladaWithPermissions,
+  PeladaDetails,
+} from '../../../../core/application/dtos';
+import { DataCorruptionError } from '../../../../core/domain/errors';
 
 type PrismaPeladaWithPlayers = PrismaPelada & { players?: PrismaPlayer[] };
 
@@ -39,13 +42,23 @@ type PrismaPeladaWithDetails = Prisma.PeladaGetPayload<{
 
 export class PrismaPeladaMapper {
   static toDomain(raw: PrismaPeladaWithPlayers): PeladaEntity {
-    return new PeladaEntity({
+    const mappedPlayers =
+      raw.players?.map((player) => PrismaPlayerMapper.toDomain(player)) ?? [];
+
+    const peladaOrError = PeladaEntity.create({
       id: raw.id,
       name: raw.name,
       ownerId: raw.ownerId,
-      players:
-        raw.players?.map((player) => PrismaPlayerMapper.toDomain(player)) ?? [],
+      players: mappedPlayers,
     });
+
+    if (peladaOrError.isFailure) {
+      throw new DataCorruptionError(
+        `Falha ao mapear Pelada (ID: ${raw.id}). Motivo: ${peladaOrError.error.message}`,
+      );
+    }
+
+    return peladaOrError.value;
   }
 
   static toPrisma(pelada: PeladaEntity) {
