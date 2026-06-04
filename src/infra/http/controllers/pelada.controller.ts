@@ -7,6 +7,8 @@ import {
   UseGuards,
   Delete,
   Put,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { CreatePelada } from '../../../core/application/use-cases/create-pelada';
 import { CreatePeladaBody } from '../dtos/create-pelada-body';
@@ -22,6 +24,7 @@ import { GetPeladaById } from '../../../core/application/use-cases/get-pelada-by
 import { UpdatePelada } from '../../../core/application/use-cases/update-pelada';
 import { UpdatePeladaBody } from '../dtos/update-pelada-body';
 import { DeletePelada } from '../../../core/application/use-cases/detele-pelada';
+import { ResponseMessage } from '../decorators/response-message.decorator';
 
 @Controller('peladas')
 @UseGuards(AuthGuard, PeladaAccessGuard)
@@ -35,29 +38,34 @@ export class PeladaController {
   ) {}
 
   @Post()
+  @ResponseMessage('Pelada criada com sucesso.')
   async create(
     @Body() body: CreatePeladaBody,
     @CurrentUser() user: JwtPayload,
   ) {
-    const pelada = await this.createPelada.execute({
+    const result = await this.createPelada.execute({
       ownerId: user.sub,
       name: body.name,
     });
 
+    if (result.isFailure) throw result.error;
+
     return {
-      pelada: PeladaPresenter.toHTTP(pelada),
+      pelada: PeladaPresenter.toHTTP(result.value),
     };
   }
 
   @Get()
   async list(@CurrentUser() user: JwtPayload) {
-    const peladas = await this.listPelada.execute({
+    const result = await this.listPelada.execute({
       userId: user.sub,
       userRole: user.role,
     });
 
+    if (result.isFailure) throw result.error;
+
     return {
-      peladas: peladas.map((pelada) =>
+      peladas: result.value.map((pelada) =>
         PeladaPresenter.toHTTPWithPermissions(pelada),
       ),
     };
@@ -69,34 +77,44 @@ export class PeladaController {
     @Param('peladaId') peladaId: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    const peladaDetails = await this.getPeladaById.execute({
+    const result = await this.getPeladaById.execute({
       peladaId,
       currentUserId: user.sub,
       currentUserRole: user.role,
     });
 
-    return { pelada: PeladaPresenter.toHTTPWithDetails(peladaDetails) };
+    if (result.isFailure) throw result.error;
+
+    return {
+      pelada: PeladaPresenter.toHTTPWithDetails(result.value),
+    };
   }
 
   @Put(':peladaId')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Pelada atualizada com sucesso.')
   async update(
     @Param('peladaId') peladaId: string,
     @Body() body: UpdatePeladaBody,
   ) {
-    const pelada = await this.updatePelada.execute({
+    const result = await this.updatePelada.execute({
       peladaId,
       name: body.name,
     });
 
+    if (result.isFailure) throw result.error;
+
     return {
-      pelada: PeladaPresenter.toHTTP(pelada),
+      pelada: PeladaPresenter.toHTTP(result.value),
     };
   }
 
   @Delete(':peladaId')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Pelada deletada com sucesso.')
   async delete(@Param('peladaId') peladaId: string) {
-    await this.deletePelada.execute({ peladaId });
+    const result = await this.deletePelada.execute({ peladaId });
 
-    return { message: 'Pelada deletada com sucesso.' };
+    if (result.isFailure) throw result.error;
   }
 }

@@ -1,10 +1,11 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Post,
   Patch,
   UseGuards,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { RegisterUser } from '../../../core/application/use-cases/register-user';
 import { AuthenticateUser } from '../../../core/application/use-cases/authenticate-user';
@@ -18,6 +19,8 @@ import { type JwtPayload } from '../guards/auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { RefreshAccessToken } from '../../../core/application/use-cases/refresh-access-token';
 import { LogoutUser } from '../../../core/application/use-cases/logout-user';
+import { PasswordsDoNotMatchError } from '../../../core/domain/errors';
+import { ResponseMessage } from '../decorators/response-message.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -30,78 +33,92 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ResponseMessage('Usuário registrado com sucesso.')
   async register(@Body() body: RegisterUserBody) {
     const { email, username, password, passwordConfirmation } = body;
 
-    if (password !== passwordConfirmation)
-      throw new BadRequestException('As senhas não conferem.');
+    if (password !== passwordConfirmation) {
+      throw new PasswordsDoNotMatchError();
+    }
 
-    const user = await this.registerUser.execute({
+    const result = await this.registerUser.execute({
       email,
       username,
       password,
     });
 
+    if (result.isFailure) {
+      throw result.error;
+    }
+
     return {
-      user: UserPresenter.toHTTP(user),
+      user: UserPresenter.toHTTP(result.value),
     };
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Login realizado com sucesso.')
   async login(@Body() body: AuthenticateBody) {
     const { identifier, password } = body;
 
-    const { accessToken, refreshToken } = await this.authenticateUser.execute({
+    const result = await this.authenticateUser.execute({
       identifier,
       password,
     });
 
+    if (result.isFailure) throw result.error;
+
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      access_token: result.value.accessToken,
+      refresh_token: result.value.refreshToken,
     };
   }
 
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Token atualizado com sucesso.')
   async refresh(@Body() body: { refreshToken: string }) {
-    const { accessToken, refreshToken } = await this.refreshAccessToken.execute(
-      {
-        refreshToken: body.refreshToken,
-      },
-    );
+    const result = await this.refreshAccessToken.execute({
+      refreshToken: body.refreshToken,
+    });
+
+    if (result.isFailure) throw result.error;
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      access_token: result.value.accessToken,
+      refresh_token: result.value.refreshToken,
     };
   }
 
   @Patch('change-password')
   @UseGuards(AuthGuard)
+  @ResponseMessage('Senha alterada com sucesso.')
   async updatePassword(
     @Body() body: ChangePasswordBody,
     @CurrentUser() user: JwtPayload,
   ) {
-    if (body.newPassword !== body.newPasswordConfirmation)
-      throw new BadRequestException('As senhas não conferem.');
+    if (body.newPassword !== body.newPasswordConfirmation) {
+      throw new PasswordsDoNotMatchError();
+    }
 
-    await this.changePassword.execute({
+    const result = await this.changePassword.execute({
       userId: user.sub,
       currentPassword: body.currentPassword,
       newPassword: body.newPassword,
     });
 
-    return {
-      message: 'Senha alterada com sucesso.',
-    };
+    if (result.isFailure) throw result.error;
   }
 
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Sessão encerrada com sucesso.')
   async logout(@Body() body: { refreshToken: string }) {
-    await this.logoutUser.execute({
+    const result = await this.logoutUser.execute({
       refreshToken: body.refreshToken,
     });
 
-    return { message: 'Sessão encerrada com sucesso.' };
+    if (result.isFailure) throw result.error;
   }
 }

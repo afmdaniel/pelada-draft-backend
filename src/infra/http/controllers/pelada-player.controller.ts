@@ -7,6 +7,8 @@ import {
   UseGuards,
   Delete,
   Put,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AddPlayerToPelada } from '../../../core/application/use-cases/add-player-to-pelada';
 import { GetPlayersByPelada } from '../../../core/application/use-cases/get-player-by-pelada';
@@ -19,6 +21,7 @@ import { PeladaPrivilege } from '../../database/generated/prisma/enums';
 import { UpdatePlayer } from '../../../core/application/use-cases/update-player';
 import { UpdatePlayerBody } from '../dtos/update-player-body';
 import { DeletePlayer } from '../../../core/application/use-cases/delete-player';
+import { ResponseMessage } from '../decorators/response-message.decorator';
 
 @Controller('peladas/:peladaId/players')
 @UseGuards(AuthGuard, PeladaAccessGuard)
@@ -29,46 +32,54 @@ export class PeladaPlayerController {
     private updatePlayer: UpdatePlayer,
     private deletePlayer: DeletePlayer,
   ) {}
-  @Post('')
+
+  @Post()
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
+  @ResponseMessage('Jogador adicionado com sucesso.')
   async create(
     @Param('peladaId') peladaId: string,
     @Body() body: CreatePlayerBody,
   ) {
     const { name, stars, position } = body;
 
-    const player = await this.addPlayer.execute({
+    const result = await this.addPlayer.execute({
       name,
       stars,
       position,
       peladaId,
     });
 
+    if (result.isFailure) throw result.error;
+
     return {
-      player: PlayerPresenter.toHTTP(player),
+      player: PlayerPresenter.toHTTP(result.value),
     };
   }
 
   @Get('')
   @RequirePrivilege(PeladaPrivilege.DRAW_TEAMS, PeladaPrivilege.MANAGE_PLAYERS)
   async list(@Param('peladaId') peladaId: string) {
-    const players = await this.listPlayers.execute({
+    const result = await this.listPlayers.execute({
       peladaId,
     });
 
+    if (result.isFailure) throw result.error;
+
     return {
-      players: players.map((player) => PlayerPresenter.toHTTP(player)),
+      players: result.value.map((player) => PlayerPresenter.toHTTP(player)),
     };
   }
 
   @Put(':playerId')
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Jogador atualizado com sucesso.')
   async update(
     @Param('peladaId') peladaId: string,
     @Param('playerId') playerId: string,
     @Body() body: UpdatePlayerBody,
   ) {
-    const player = await this.updatePlayer.execute({
+    const result = await this.updatePlayer.execute({
       peladaId,
       playerId,
       name: body.name,
@@ -76,20 +87,26 @@ export class PeladaPlayerController {
       position: body.position,
     });
 
-    return { player: PlayerPresenter.toHTTP(player) };
+    if (result.isFailure) throw result.error;
+
+    return {
+      player: PlayerPresenter.toHTTP(result.value),
+    };
   }
 
   @Delete(':playerId')
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Jogador removido com sucesso.')
   async delete(
     @Param('peladaId') peladaId: string,
     @Param('playerId') playerId: string,
   ) {
-    await this.deletePlayer.execute({
+    const result = await this.deletePlayer.execute({
       peladaId,
       playerId,
     });
 
-    return { message: 'Jogador removido com sucesso.' };
+    if (result.isFailure) throw result.error;
   }
 }
