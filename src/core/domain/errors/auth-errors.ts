@@ -35,6 +35,18 @@ export class ExpiredTokenError extends UnauthorizedError {
   }
 }
 
+export class MissingAccessTokenError extends UnauthorizedError {
+  constructor() {
+    super('Access token ausente.', 'MISSING_ACCESS_TOKEN');
+  }
+}
+
+export class MissingRefreshTokenError extends UnauthorizedError {
+  constructor() {
+    super('Refresh token ausente.', 'MISSING_REFRESH_TOKEN');
+  }
+}
+
 export class MissingTokenDataError extends DomainError {
   constructor() {
     super('Token ausente ou malformado.', 'MISSING_TOKEN_DATA');

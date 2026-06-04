@@ -6,22 +6,28 @@ import {
   UseGuards,
   HttpStatus,
   HttpCode,
+  Res,
+  Req,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import { type Response, type Request } from 'express';
+import ms, { StringValue } from 'ms';
 import { RegisterUser } from '../../../core/application/use-cases/register-user';
 import { AuthenticateUser } from '../../../core/application/use-cases/authenticate-user';
 import { ChangePassword } from '../../../core/application/use-cases/change-password';
 import { RegisterUserBody } from '../dtos/register-user-body';
 import { AuthenticateBody } from '../dtos/authenticate-body';
 import { ChangePasswordBody } from '../dtos/change-password-body';
-import { UserPresenter } from '../presenters/user-presenter';
 import { AuthGuard } from '../guards/auth.guard';
 import { type JwtPayload } from '../guards/auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { RefreshAccessToken } from '../../../core/application/use-cases/refresh-access-token';
 import { LogoutUser } from '../../../core/application/use-cases/logout-user';
-import { PasswordsDoNotMatchError } from '../../../core/domain/errors';
+import {
+  MissingRefreshTokenError,
+  PasswordsDoNotMatchError,
+} from '../../../core/domain/errors';
 import { ResponseMessage } from '../decorators/response-message.decorator';
-import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 @Throttle({
@@ -31,6 +37,12 @@ import { Throttle } from '@nestjs/throttler';
   },
 })
 export class AuthController {
+  private readonly cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+  };
+
   constructor(
     private registerUser: RegisterUser,
     private authenticateUser: AuthenticateUser,
@@ -57,16 +69,15 @@ export class AuthController {
     if (result.isFailure) {
       throw result.error;
     }
-
-    return {
-      user: UserPresenter.toHTTP(result.value),
-    };
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Login realizado com sucesso.')
-  async login(@Body() body: AuthenticateBody) {
+  async login(
+    @Body() body: AuthenticateBody,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { identifier, password } = body;
 
     const result = await this.authenticateUser.execute({
@@ -76,26 +87,34 @@ export class AuthController {
 
     if (result.isFailure) throw result.error;
 
-    return {
-      access_token: result.value.accessToken,
-      refresh_token: result.value.refreshToken,
-    };
+    this.setAuthCookies(
+      res,
+      result.value.accessToken,
+      result.value.refreshToken,
+    );
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Token atualizado com sucesso.')
-  async refresh(@Body() body: { refreshToken: string }) {
-    const result = await this.refreshAccessToken.execute({
-      refreshToken: body.refreshToken,
-    });
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies['refresh_token'] as string;
 
+    if (!refreshToken) {
+      throw new MissingRefreshTokenError();
+    }
+
+    const result = await this.refreshAccessToken.execute({ refreshToken });
     if (result.isFailure) throw result.error;
 
-    return {
-      access_token: result.value.accessToken,
-      refresh_token: result.value.refreshToken,
-    };
+    this.setAuthCookies(
+      res,
+      result.value.accessToken,
+      result.value.refreshToken,
+    );
   }
 
   @Patch('change-password')
@@ -121,11 +140,35 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Sessão encerrada com sucesso.')
-  async logout(@Body() body: { refreshToken: string }) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies['refresh_token'] as string;
+
     const result = await this.logoutUser.execute({
-      refreshToken: body.refreshToken,
+      refreshToken,
     });
 
     if (result.isFailure) throw result.error;
+
+    res.clearCookie('access_token', this.cookieOptions);
+    res.clearCookie('refresh_token', this.cookieOptions);
+  }
+
+  private setAuthCookies(
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+  ) {
+    const accessTtl = process.env.JWT_EXPIRES_IN || '15m';
+    const refreshTtl = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
+
+    res.cookie('access_token', accessToken, {
+      ...this.cookieOptions,
+      maxAge: ms(accessTtl as StringValue),
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      ...this.cookieOptions,
+      maxAge: ms(refreshTtl as StringValue),
+    });
   }
 }
