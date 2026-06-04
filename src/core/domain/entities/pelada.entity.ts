@@ -1,3 +1,9 @@
+import {
+  InvalidPeladaCharsError,
+  InvalidPeladaNameError,
+  MissingOwnerIDError,
+} from '../errors';
+import { Result } from '../logic/result';
 import { Player } from './player.entity';
 
 export interface PeladaProps {
@@ -11,7 +17,6 @@ export class Pelada {
   private props: PeladaProps;
 
   constructor(props: PeladaProps) {
-    this.validate(props);
     this.props = {
       ...props,
       id: props.id ?? crypto.randomUUID(),
@@ -19,13 +24,21 @@ export class Pelada {
     };
   }
 
-  private validate({ name, ownerId }: PeladaProps) {
-    if (!name || name.trim().length < 3) {
-      throw new Error('O nome da pelada deve ter pelo menos 3 caracteres.');
+  static create(props: PeladaProps) {
+    if (!props.ownerId) {
+      return Result.fail(new MissingOwnerIDError());
     }
-    if (!ownerId) {
-      throw new Error('A pelada deve pertencer a um usuário.');
+
+    if (!props.name || props.name.trim().length < 3) {
+      return Result.fail(new InvalidPeladaNameError());
     }
+
+    const nameRegex = /^[a-zA-Z0-9À-ÿ ]+$/;
+    if (!nameRegex.test(props.name)) {
+      return Result.fail(new InvalidPeladaCharsError());
+    }
+
+    return Result.ok(new Pelada(props));
   }
 
   get id() {
@@ -36,5 +49,8 @@ export class Pelada {
   }
   get ownerId() {
     return this.props.ownerId;
+  }
+  get players() {
+    return this.props.players;
   }
 }

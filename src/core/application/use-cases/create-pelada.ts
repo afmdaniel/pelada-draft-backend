@@ -1,28 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 import { Pelada } from '../../domain/entities/pelada.entity';
+import { Result } from '../../domain/logic/result';
+import { AppError } from '../../domain/errors/app-error';
+import { InvalidPeladaNameError } from '../../domain/errors';
 
 interface CreatePeladaInput {
   ownerId: string;
   name: string;
 }
 
+type CreatePeladaOutput = Result<Pelada, AppError>;
+
 @Injectable()
 export class CreatePelada {
   constructor(private peladaRepository: PeladaRepository) {}
 
-  async execute(input: CreatePeladaInput): Promise<Pelada> {
+  async execute(input: CreatePeladaInput): Promise<CreatePeladaOutput> {
     if (!input.name || input.name.trim() === '') {
-      throw new Error('O nome da pelada é obrigatório.');
+      return Result.fail(new InvalidPeladaNameError());
     }
 
-    const pelada = new Pelada({
+    const peladaOrError = Pelada.create({
       ownerId: input.ownerId,
       name: input.name,
     });
 
+    if (peladaOrError.isFailure) {
+      return Result.fail(peladaOrError.error);
+    }
+
+    const pelada = peladaOrError.value;
+
     await this.peladaRepository.create(pelada);
 
-    return pelada;
+    return Result.ok(pelada);
   }
 }

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 import { UserRepository } from '../../domain/repositories/user-repository';
 import {
@@ -10,6 +6,14 @@ import {
   PeladaPermission,
   PeladaPrivilege,
 } from '../../domain/entities/pelada-permission.entity';
+import { Result } from '../../domain/logic/result';
+import { AppError } from '../../domain/errors/app-error';
+import {
+  InvalidPermissionActionError,
+  OwnerImplicitAccessError,
+  PeladaNotFoundError,
+  UserNotFoundError,
+} from '../../domain/errors';
 
 interface ManagePermissionInput {
   peladaId: string;
@@ -18,6 +22,8 @@ interface ManagePermissionInput {
   action: 'ASSIGN' | 'REVOKE';
 }
 
+type ManagePermissionOutput = Result<void, AppError>;
+
 @Injectable()
 export class ManagePeladaPermission {
   constructor(
@@ -25,27 +31,27 @@ export class ManagePeladaPermission {
     private userRepository: UserRepository,
   ) {}
 
-  async execute(input: ManagePermissionInput): Promise<void> {
+  async execute(input: ManagePermissionInput): Promise<ManagePermissionOutput> {
     const targetUser = await this.userRepository.findByIdentifier(
       input.userIdentifier,
     );
 
     if (!targetUser) {
-      throw new NotFoundException(
-        'Usuário com o e-mail ou username informado não foi encontrado.',
-      );
+      return Result.fail(new UserNotFoundError());
     }
 
     const pelada = await this.peladaRepository.findById(input.peladaId);
 
     if (!pelada) {
-      throw new NotFoundException('Pelada não encontrada.');
+      return Result.fail(new PeladaNotFoundError());
     }
 
     if (pelada.ownerId === targetUser.id) {
-      throw new BadRequestException(
-        'O dono da pelada já possui acesso total implícito.',
-      );
+      return Result.fail(new OwnerImplicitAccessError());
+    }
+
+    if (input.action !== 'ASSIGN' && input.action !== 'REVOKE') {
+      return Result.fail(new InvalidPermissionActionError());
     }
 
     const privilegesToProcess =
@@ -53,25 +59,32 @@ export class ManagePeladaPermission {
         ? Object.values(PELADA_PRIVILEGES)
         : [input.privilege];
 
-    const peladaPermissions = privilegesToProcess.map(
-      (privilege) =>
-        new PeladaPermission({
-          userId: targetUser.id,
-          peladaId: pelada.id!,
-          privilege,
-        }),
-    );
+    const peladaPermissions: PeladaPermission[] = [];
+
+    for (const privilege of privilegesToProcess) {
+      const permissionOrError = PeladaPermission.create({
+        userId: targetUser.id,
+        peladaId: pelada.id!,
+        privilege,
+      });
+
+      if (permissionOrError.isFailure) {
+        return Result.fail(permissionOrError.error);
+      }
+
+      peladaPermissions.push(permissionOrError.value);
+    }
 
     if (input.action === 'ASSIGN') {
       await this.peladaRepository.assignPermissions(peladaPermissions);
-    } else if (input.action === 'REVOKE') {
+    } else {
       await this.peladaRepository.revokePermissions(
         targetUser.id,
         pelada.id!,
         privilegesToProcess,
       );
-    } else {
-      throw new BadRequestException('Ação de permissão inválida.');
     }
+
+    return Result.ok<void>(undefined);
   }
 }

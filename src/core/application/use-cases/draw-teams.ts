@@ -3,6 +3,13 @@ import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 import { DrawBalancerService } from '../../domain/services/draw-balancer.service';
 import { Team } from '../../domain/entities/team.entity';
 import { DrawContext } from '../../domain/value-objects/draw-context';
+import { Result } from '../../domain/logic/result';
+import { AppError } from '../../domain/errors/app-error';
+import {
+  InvalidTeamCountError,
+  PeladaNotFoundError,
+  PlayersNotInPeladaError,
+} from '../../domain/errors';
 
 interface DrawTeamsInput {
   peladaId: string;
@@ -11,6 +18,8 @@ interface DrawTeamsInput {
   withPosition: boolean;
 }
 
+type DrawTeamsOutput = Result<Team[], AppError>;
+
 @Injectable()
 export class DrawTeams {
   constructor(
@@ -18,7 +27,17 @@ export class DrawTeams {
     private drawBalancerService: DrawBalancerService,
   ) {}
 
-  async execute(input: DrawTeamsInput): Promise<Team[]> {
+  async execute(input: DrawTeamsInput): Promise<DrawTeamsOutput> {
+    const pelada = await this.peladaRepository.findById(input.peladaId);
+
+    if (!pelada) {
+      return Result.fail(new PeladaNotFoundError());
+    }
+
+    if (input.teamsQuantity < 2) {
+      return Result.fail(new InvalidTeamCountError());
+    }
+
     const allPlayers = await this.peladaRepository.findManyPlayersByPeladaId(
       input.peladaId,
     );
@@ -28,18 +47,18 @@ export class DrawTeams {
     );
 
     if (selectedPlayers.length !== input.playersIds.length) {
-      throw new Error(
-        'Um ou mais jogadores selecionados não pertencem a esta pelada.',
-      );
+      return Result.fail(new PlayersNotInPeladaError());
     }
 
-    return this.drawBalancerService.draw(
-      new DrawContext(
-        input.peladaId,
-        selectedPlayers,
-        input.teamsQuantity,
-        input.withPosition,
-      ),
+    const context = new DrawContext(
+      input.peladaId,
+      selectedPlayers,
+      input.teamsQuantity,
+      input.withPosition,
     );
+
+    const teams = this.drawBalancerService.draw(context);
+
+    return Result.ok(teams);
   }
 }

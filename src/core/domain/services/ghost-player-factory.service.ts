@@ -14,19 +14,26 @@ export class GhostPlayerFactory {
     }
 
     const missingCount = numberOfTeams - remainder;
-
     const stars = this.getMostFrequentStars(players);
 
-    const ghosts = Array.from(
-      { length: missingCount },
-      (_, index) =>
-        new Player({
-          name: `Ghost ${index + 1}`,
-          stars,
-          peladaId,
-          position: PlayerPosition.GERAL,
-        }),
-    );
+    const ghosts: Player[] = [];
+
+    for (let index = 0; index < missingCount; index++) {
+      const playerOrError = Player.create({
+        name: `Ghost ${index + 1}`,
+        stars,
+        peladaId,
+        position: PlayerPosition.GERAL,
+      });
+
+      if (playerOrError.isFailure) {
+        throw new Error(
+          `Falha crítica ao gerar fantasma: ${playerOrError.error.message}`,
+        );
+      }
+
+      ghosts.push(playerOrError.value);
+    }
 
     return [...players, ...ghosts];
   }

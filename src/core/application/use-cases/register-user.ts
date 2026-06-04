@@ -1,14 +1,21 @@
-// src/core/use-cases/register-user.ts
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../../domain/repositories/user-repository';
 import { HashGenerator } from '../../domain/services/hash-generator';
 import { User } from '../../domain/entities/user.entity';
+import { Result } from '../../domain/logic/result';
+import { AppError } from '../../domain/errors/app-error';
+import {
+  EmailAlreadyExistsError,
+  UsernameAlreadyExistsError,
+} from '../../domain/errors';
 
 interface RegisterUserInput {
   email: string;
   username: string;
   password: string;
 }
+
+type RegisterUserOutput = Result<User, AppError>;
 
 @Injectable()
 export class RegisterUser {
@@ -17,30 +24,36 @@ export class RegisterUser {
     private hashGenerator: HashGenerator,
   ) {}
 
-  async execute(input: RegisterUserInput): Promise<User> {
+  async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
     const emailExists = await this.userRepository.findByEmail(input.email);
     if (emailExists) {
-      throw new Error('Este e-mail já está em uso.');
+      return Result.fail(new EmailAlreadyExistsError());
     }
 
     const usernameExists = await this.userRepository.findByUsername(
       input.username,
     );
     if (usernameExists) {
-      throw new Error('Este nome de usuário já está em uso.');
+      return Result.fail(new UsernameAlreadyExistsError());
     }
 
     const hashedPassword = await this.hashGenerator.hash(input.password);
 
-    const user = new User({
+    const userOrError = User.create({
       email: input.email,
       username: input.username,
       password: hashedPassword,
       role: 'USER',
     });
 
+    if (userOrError.isFailure) {
+      return Result.fail(userOrError.error);
+    }
+
+    const user = userOrError.value;
+
     await this.userRepository.create(user);
 
-    return user;
+    return Result.ok(user);
   }
 }

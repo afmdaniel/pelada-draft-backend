@@ -1,3 +1,6 @@
+import { InvalidCredentialsError, MissingRelationsError } from '../errors';
+import { Result } from '../logic/result';
+
 export const PELADA_PRIVILEGES = {
   DRAW_TEAMS: 'DRAW_TEAMS',
   MANAGE_PLAYERS: 'MANAGE_PLAYERS',
@@ -21,6 +24,21 @@ export class PeladaPermission {
       ...props,
       id: props.id ?? crypto.randomUUID(),
     };
+  }
+
+  public static create(props: PeladaPermissionProps) {
+    if (!props.userId || !props.peladaId) {
+      return Result.fail(new MissingRelationsError());
+    }
+
+    const isValidPrivilege = Object.values(PELADA_PRIVILEGES).includes(
+      props.privilege,
+    );
+    if (!isValidPrivilege) {
+      return Result.fail(new InvalidCredentialsError());
+    }
+
+    return Result.ok(new PeladaPermission(props));
   }
 
   get id() {

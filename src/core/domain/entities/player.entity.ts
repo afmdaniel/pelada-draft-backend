@@ -1,4 +1,10 @@
 import { PlayerPosition } from '../constants/player-position';
+import {
+  InvalidPlayerNameError,
+  InvalidStarsError,
+  MissingPeladaIdError,
+} from '../errors';
+import { Result } from '../logic/result';
 
 export interface PlayerProps {
   id?: string;
@@ -11,9 +17,7 @@ export interface PlayerProps {
 export class Player {
   private props: PlayerProps;
 
-  constructor(props: PlayerProps) {
-    this.validate(props);
-
+  private constructor(props: PlayerProps) {
     this.props = {
       ...props,
       id: props.id ?? crypto.randomUUID(),
@@ -21,23 +25,22 @@ export class Player {
     };
   }
 
-  private validate({ name, stars, peladaId }: PlayerProps) {
-    if (!peladaId) {
-      throw new Error('O jogador deve pertencer a uma pelada.');
+  static create(props: PlayerProps) {
+    if (!props.peladaId) {
+      return Result.fail(new MissingPeladaIdError());
     }
 
-    if (!name || name.trim().length < 2) {
-      throw new Error('O nome deve ter pelo menos 2 caracteres.');
+    if (!props.name || props.name.trim().length < 2) {
+      return Result.fail(new InvalidPlayerNameError());
     }
 
-    if (!Number.isInteger(stars) || stars < 1 || stars > 10) {
-      throw new Error(
-        'O número de estrelas deve ser um número inteiro entre 1 e 10.',
-      );
+    if (!Number.isInteger(props.stars) || props.stars < 1 || props.stars > 10) {
+      return Result.fail(new InvalidStarsError());
     }
+
+    return Result.ok(new Player(props));
   }
 
-  // Getters para manter a imutabilidade externa
   get id() {
     return this.props.id;
   }

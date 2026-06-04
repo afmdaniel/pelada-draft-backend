@@ -1,3 +1,6 @@
+import { Result } from '../logic/result';
+import { MissingTokenDataError, TokenAlreadyExpiredError } from '../errors';
+
 export interface RefreshTokenProps {
   tokenJti: string;
   userId: string;
@@ -5,20 +8,32 @@ export interface RefreshTokenProps {
 }
 
 export class RefreshToken {
-  private refreshTokenProps: RefreshTokenProps;
+  private props: RefreshTokenProps;
 
   constructor(props: RefreshTokenProps) {
-    this.refreshTokenProps = props;
+    this.props = props;
+  }
+
+  public static create(props: RefreshTokenProps) {
+    if (!props.tokenJti || !props.userId) {
+      return Result.fail(new MissingTokenDataError());
+    }
+
+    if (props.expiresAt <= new Date()) {
+      return Result.fail(new TokenAlreadyExpiredError());
+    }
+
+    return Result.ok(new RefreshToken(props));
   }
 
   get tokenJti() {
-    return this.refreshTokenProps.tokenJti;
+    return this.props.tokenJti;
   }
   get userId() {
-    return this.refreshTokenProps.userId;
+    return this.props.userId;
   }
   get expiresAt() {
-    return this.refreshTokenProps.expiresAt;
+    return this.props.expiresAt;
   }
 
   isExpired(now: Date = new Date()) {

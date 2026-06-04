@@ -1,7 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 import { PeladaDetails } from '../dtos/pelada-details.dto';
 import { PELADA_PRIVILEGES } from '../../domain/entities/pelada-permission.entity';
+import { Result } from '../../domain/logic/result';
+import { AppError } from '../../domain/errors/app-error';
+import { PeladaNotFoundError } from '../../domain/errors';
 
 interface GetPeladaByIdInput {
   peladaId: string;
@@ -9,21 +12,23 @@ interface GetPeladaByIdInput {
   currentUserRole: string;
 }
 
+type GetPeladaByIdOutput = Result<PeladaDetails, AppError>;
+
 @Injectable()
 export class GetPeladaById {
   constructor(private peladaRepository: PeladaRepository) {}
 
-  async execute(input: GetPeladaByIdInput): Promise<PeladaDetails> {
+  async execute(input: GetPeladaByIdInput): Promise<GetPeladaByIdOutput> {
     const peladaDetails = await this.peladaRepository.findDetailsById(
       input.peladaId,
       input.currentUserId,
     );
 
     if (!peladaDetails) {
-      throw new NotFoundException('Pelada não encontrada.');
+      return Result.fail(new PeladaNotFoundError());
     }
 
-    return {
+    const formattedDetails = {
       ...peladaDetails,
       privileges:
         peladaDetails.ownerId === input.currentUserId ||
@@ -31,5 +36,7 @@ export class GetPeladaById {
           ? Object.values(PELADA_PRIVILEGES)
           : peladaDetails.privileges,
     };
+
+    return Result.ok(formattedDetails);
   }
 }

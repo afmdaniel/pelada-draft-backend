@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtSignOptions } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import ms, { StringValue } from 'ms';
@@ -7,10 +7,21 @@ import { RefreshTokenRepository } from '../../domain/repositories/refresh-token-
 import { Encrypter } from '../../domain/services/encrypter';
 import { authConfig } from '../../../infra/config/auth';
 import { RefreshToken } from '../../domain/entities/refresh-token.entity';
+import { AppError } from '../../domain/errors/app-error';
+import { Result } from '../../domain/logic/result';
+import { InvalidTokenError, UserNotFoundError } from '../../domain/errors';
 
 interface RefreshAccessTokenInput {
   refreshToken: string;
 }
+
+type RefreshAccessTokenOutput = Result<
+  {
+    accessToken: string;
+    refreshToken: string;
+  },
+  AppError
+>;
 
 @Injectable()
 export class RefreshAccessToken {
@@ -20,60 +31,70 @@ export class RefreshAccessToken {
     private encrypter: Encrypter,
   ) {}
 
-  async execute(input: RefreshAccessTokenInput) {
+  async execute(
+    input: RefreshAccessTokenInput,
+  ): Promise<RefreshAccessTokenOutput> {
+    let payload: Record<string, any>;
+
     try {
-      const payload = await this.encrypter.decrypt(
+      payload = await this.encrypter.decrypt(
         input.refreshToken,
         authConfig.jwt.refreshTokenSecret!,
       );
-
-      const refreshToken = await this.refreshTokenRepository.findByJti(
-        payload.jti as string,
-      );
-      if (!refreshToken || refreshToken.isExpired()) {
-        throw new UnauthorizedException('Refresh token inválido ou expirado.');
-      }
-
-      const user = await this.userRepository.findById(payload.sub as string);
-      if (!user) throw new UnauthorizedException('Usuário não encontrado.');
-
-      await this.refreshTokenRepository.deleteByJti(payload.jti as string);
-
-      const newRefreshTokenJti = randomUUID();
-      const newAccessToken = await this.encrypter.encrypt(
-        { sub: user.id, role: user.role },
-        {
-          secret: authConfig.jwt.accessTokenSecret!,
-          expiresIn: authConfig.jwt
-            .accessTokenExpiresIn! as JwtSignOptions['expiresIn'],
-        },
-      );
-      const newRefreshToken = await this.encrypter.encrypt(
-        { sub: user.id, jti: newRefreshTokenJti },
-        {
-          secret: authConfig.jwt.refreshTokenSecret!,
-          expiresIn: authConfig.jwt
-            .refreshTokenExpiresIn! as JwtSignOptions['expiresIn'],
-        },
-      );
-
-      const currentTime = Date.now();
-      const expiresInMs = ms(
-        authConfig.jwt.refreshTokenExpiresIn as StringValue,
-      );
-      const expiresAtDate = new Date(currentTime + expiresInMs);
-
-      const refreshTokenData = new RefreshToken({
-        tokenJti: newRefreshTokenJti,
-        userId: user.id,
-        expiresAt: expiresAtDate,
-      });
-
-      await this.refreshTokenRepository.create(refreshTokenData);
-
-      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     } catch {
-      throw new UnauthorizedException('Refresh token inválido.');
+      return Result.fail(new InvalidTokenError());
     }
+
+    const currentRefreshToken = await this.refreshTokenRepository.findByJti(
+      payload.jti as string,
+    );
+    if (!currentRefreshToken || currentRefreshToken.isExpired()) {
+      return Result.fail(new InvalidTokenError());
+    }
+
+    const user = await this.userRepository.findById(payload.sub as string);
+    if (!user) return Result.fail(new UserNotFoundError());
+
+    await this.refreshTokenRepository.deleteByJti(payload.jti as string);
+
+    const newRefreshTokenJti = randomUUID();
+    const newAccessToken = await this.encrypter.encrypt(
+      { sub: user.id, role: user.role },
+      {
+        secret: authConfig.jwt.accessTokenSecret!,
+        expiresIn: authConfig.jwt
+          .accessTokenExpiresIn! as JwtSignOptions['expiresIn'],
+      },
+    );
+
+    const newRefreshToken = await this.encrypter.encrypt(
+      { sub: user.id, jti: newRefreshTokenJti },
+      {
+        secret: authConfig.jwt.refreshTokenSecret!,
+        expiresIn: authConfig.jwt
+          .refreshTokenExpiresIn! as JwtSignOptions['expiresIn'],
+      },
+    );
+
+    const currentTime = Date.now();
+    const expiresInMs = ms(authConfig.jwt.refreshTokenExpiresIn as StringValue);
+    const expiresAtDate = new Date(currentTime + expiresInMs);
+
+    const refreshTokenOrError = RefreshToken.create({
+      tokenJti: newRefreshTokenJti,
+      userId: user.id,
+      expiresAt: expiresAtDate,
+    });
+
+    if (refreshTokenOrError.isFailure) {
+      return Result.fail(refreshTokenOrError.error);
+    }
+
+    await this.refreshTokenRepository.create(refreshTokenOrError.value);
+
+    return Result.ok({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
   }
 }

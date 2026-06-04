@@ -8,16 +8,21 @@ import { Encrypter } from '../../domain/services/encrypter';
 import { randomUUID } from 'crypto';
 import { authConfig } from '../../../infra/config/auth';
 import { RefreshToken } from '../../domain/entities/refresh-token.entity';
+import { Result } from '../../domain/logic/result';
+import { AppError } from '../../domain/errors/app-error';
+import { InvalidPasswordError, UserNotFoundError } from '../../domain/errors';
 
 interface AuthenticateUserInput {
   identifier: string;
   password: string;
 }
 
-interface AuthenticateUserOutput {
+interface AuthTokens {
   accessToken: string;
   refreshToken: string;
 }
+
+type AuthenticateUserOutput = Result<AuthTokens, AppError>;
 
 @Injectable()
 export class AuthenticateUser {
@@ -32,7 +37,7 @@ export class AuthenticateUser {
     const user = await this.userRepository.findByIdentifier(input.identifier);
 
     if (!user) {
-      throw new Error('Usuário não encontrado');
+      return Result.fail(new UserNotFoundError());
     }
 
     const isPasswordValid = await this.hashGenerator.compare(
@@ -40,7 +45,7 @@ export class AuthenticateUser {
       user.password,
     );
     if (!isPasswordValid) {
-      throw new Error('Senha incorreta');
+      return Result.fail(new InvalidPasswordError());
     }
 
     const accessToken = await this.encrypter.encrypt(
@@ -69,14 +74,18 @@ export class AuthenticateUser {
     const expiresInMs = ms(authConfig.jwt.refreshTokenExpiresIn as StringValue);
     const expiresAtDate = new Date(currentTime + expiresInMs);
 
-    const refreshTokenData = new RefreshToken({
+    const refreshTokenData = RefreshToken.create({
       tokenJti: refreshTokenJti,
       userId: user.id,
       expiresAt: expiresAtDate,
     });
 
-    await this.refreshTokenRepository.create(refreshTokenData);
+    if (refreshTokenData.isFailure) {
+      return Result.fail(refreshTokenData.error);
+    }
 
-    return { accessToken, refreshToken };
+    await this.refreshTokenRepository.create(refreshTokenData.value);
+
+    return Result.ok({ accessToken, refreshToken });
   }
 }

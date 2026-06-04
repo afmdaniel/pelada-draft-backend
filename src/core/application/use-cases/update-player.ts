@@ -1,12 +1,13 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PeladaRepository } from '../../domain/repositories/pelada-repository';
 import { Player } from '../../domain/entities/player.entity';
 import { PlayerPosition } from '../../domain/constants/player-position';
+import { Result } from '../../domain/logic/result';
+import { AppError } from '../../domain/errors/app-error';
+import {
+  PlayerAlreadyExistsError,
+  PlayerNotFoundError,
+} from '../../domain/errors';
 
 interface UpdatePlayerInput {
   peladaId: string;
@@ -16,17 +17,18 @@ interface UpdatePlayerInput {
   position?: PlayerPosition;
 }
 
+type UpdatePlayerOutput = Result<Player, AppError>;
+
 @Injectable()
 export class UpdatePlayer {
   constructor(private peladaRepository: PeladaRepository) {}
 
-  async execute(input: UpdatePlayerInput): Promise<Player> {
+  async execute(input: UpdatePlayerInput): Promise<UpdatePlayerOutput> {
     const player = await this.peladaRepository.findPlayerById(input.playerId);
 
-    if (!player) throw new NotFoundException('Jogador não encontrado.');
-
-    if (player.peladaId !== input.peladaId)
-      throw new BadRequestException('Esse jogador não pertence a essa pelada.');
+    if (!player || player.peladaId !== input.peladaId) {
+      return Result.fail(new PlayerNotFoundError());
+    }
 
     const playerAlreadyExists =
       await this.peladaRepository.findPlayerByNameAndPeladaId(
@@ -35,12 +37,10 @@ export class UpdatePlayer {
       );
 
     if (playerAlreadyExists?.id !== input.playerId && playerAlreadyExists) {
-      throw new ConflictException(
-        'Já existe um jogador cadastrado com este nome nesta pelada.',
-      );
+      return Result.fail(new PlayerAlreadyExistsError());
     }
 
-    const newPlayer = new Player({
+    const newPlayerOrError = Player.create({
       id: input.playerId,
       stars: input.stars,
       name: input.name,
@@ -48,8 +48,13 @@ export class UpdatePlayer {
       peladaId: player.peladaId,
     });
 
+    if (newPlayerOrError.isFailure) {
+      return Result.fail(newPlayerOrError.error);
+    }
+
+    const newPlayer = newPlayerOrError.value;
     await this.peladaRepository.updatePlayer(newPlayer);
 
-    return newPlayer;
+    return Result.ok(newPlayer);
   }
 }
