@@ -21,8 +21,15 @@ import { RefreshAccessToken } from '../../../core/application/use-cases/refresh-
 import { LogoutUser } from '../../../core/application/use-cases/logout-user';
 import { PasswordsDoNotMatchError } from '../../../core/domain/errors';
 import { ResponseMessage } from '../decorators/response-message.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
+@Throttle({
+  default: {
+    ttl: 60000,
+    limit: 5,
+  },
+})
 export class AuthController {
   constructor(
     private registerUser: RegisterUser,
