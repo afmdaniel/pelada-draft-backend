@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class AuthenticateBody {
   @ApiProperty({
     description: 'E-mail válido ou username do usuário.',
-    examples: ['usuario@email.com', 'usuario123'],
+    example: 'usuario123',
   })
   @IsNotEmpty()
   @IsString()

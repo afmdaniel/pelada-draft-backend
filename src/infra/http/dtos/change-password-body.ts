@@ -12,7 +12,7 @@ export class ChangePasswordBody {
 
   @ApiProperty({
     description: 'Senha com no mínimo 6 caracteres',
-    example: 'senhaForte123',
+    example: 'senhaForte456',
     minLength: 6,
   })
   @IsNotEmpty()
@@ -22,7 +22,7 @@ export class ChangePasswordBody {
 
   @ApiProperty({
     description: 'Confirmação da senha. Deve ser idêntica ao campo password.',
-    example: 'senhaForte123',
+    example: 'senhaForte456',
   })
   @IsNotEmpty()
   @IsString()

@@ -16,7 +16,7 @@ export class UpdatePlayerBody {
   @ApiProperty({
     description:
       'Nome do jogador entre 2 e 40 caracteres, sem caracteres especiais e números.',
-    examples: ['Neymar Jr', 'Messi', 'Cristiano Ronaldo'],
+    example: 'Neymar Jr',
     minLength: 2,
     maxLength: 40,
   })
@@ -33,7 +33,7 @@ export class UpdatePlayerBody {
 
   @ApiProperty({
     description: 'Estrelas do jogador entre 0 e 10.',
-    example: 6,
+    example: 8,
     minimum: 0,
     maximum: 10,
   })
@@ -45,7 +45,7 @@ export class UpdatePlayerBody {
   @ApiProperty({
     description: 'Posição do jogador.',
     enum: PlayerPosition,
-    examples: ['ATAQUE', 'ZAGA', 'MEIO'],
+    example: 'ATAQUE',
   })
   @IsOptional()
   @IsEnum(PlayerPosition, { message: 'Posição inválida.' })

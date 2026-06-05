@@ -14,7 +14,8 @@ import {
   ApiTags,
   ApiCookieAuth,
   ApiOperation,
-  ApiResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import { AddPlayerToPelada } from '../../../core/application/use-cases/add-player-to-pelada';
 import { GetPlayersByPelada } from '../../../core/application/use-cases/get-player-by-pelada';
@@ -28,6 +29,12 @@ import { UpdatePlayer } from '../../../core/application/use-cases/update-player'
 import { UpdatePlayerBody } from '../dtos/update-player-body';
 import { DeletePlayer } from '../../../core/application/use-cases/delete-player';
 import { ResponseMessage } from '../decorators/response-message.decorator';
+import {
+  CreatePlayerResponseDto,
+  ListPlayersResponseDto,
+  UpdatePlayerResponseDto,
+} from '../dtos/player-response.dto';
+import { BaseResponseDto } from '../dtos/base-response.dto';
 
 @ApiTags('Jogadores')
 @ApiCookieAuth('access_token')
@@ -43,7 +50,10 @@ export class PeladaPlayerController {
 
   @Post()
   @ApiOperation({ summary: 'Adiciona um jogador à pelada' })
-  @ApiResponse({ status: 201, description: 'Jogador adicionado com sucesso.' })
+  @ApiCreatedResponse({
+    type: CreatePlayerResponseDto,
+    description: 'Jogador adicionado com sucesso.',
+  })
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
   @ResponseMessage('Jogador adicionado com sucesso.')
   async create(
@@ -68,8 +78,8 @@ export class PeladaPlayerController {
 
   @Get('')
   @ApiOperation({ summary: 'Lista os jogadores da pelada' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: ListPlayersResponseDto,
     description: 'Lista de jogadores retornada com sucesso.',
   })
   @RequirePrivilege(PeladaPrivilege.DRAW_TEAMS, PeladaPrivilege.MANAGE_PLAYERS)
@@ -88,7 +98,10 @@ export class PeladaPlayerController {
   @Put(':playerId')
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
   @ApiOperation({ summary: 'Atualiza os dados de um jogador' })
-  @ApiResponse({ status: 200, description: 'Jogador atualizado com sucesso.' })
+  @ApiOkResponse({
+    type: UpdatePlayerResponseDto,
+    description: 'Jogador atualizado com sucesso.',
+  })
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Jogador atualizado com sucesso.')
   async update(
@@ -114,7 +127,10 @@ export class PeladaPlayerController {
   @Delete(':playerId')
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS)
   @ApiOperation({ summary: 'Remove um jogador da pelada' })
-  @ApiResponse({ status: 200, description: 'Jogador removido com sucesso.' })
+  @ApiOkResponse({
+    type: BaseResponseDto,
+    description: 'Jogador removido com sucesso.',
+  })
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Jogador removido com sucesso.')
   async delete(

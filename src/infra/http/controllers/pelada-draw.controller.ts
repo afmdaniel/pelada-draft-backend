@@ -3,7 +3,7 @@ import {
   ApiTags,
   ApiCookieAuth,
   ApiOperation,
-  ApiResponse,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { DrawTeams } from '../../../core/application/use-cases/draw-teams';
 import { DrawTeamsBody } from '../dtos/draw-teams-body';
@@ -13,6 +13,7 @@ import { AuthGuard } from '../guards/auth.guard';
 import { PeladaAccessGuard } from '../guards/pelada-access.guard';
 import { PeladaPrivilege } from '../../database/generated/prisma/enums';
 import { ResponseMessage } from '../decorators/response-message.decorator';
+import { DrawTeamsResponseDto } from '../dtos/draw-response.dto';
 
 @ApiTags('Sorteio')
 @ApiCookieAuth('access_token')
@@ -24,7 +25,10 @@ export class PeladaDrawController {
   @Post()
   @RequirePrivilege(PeladaPrivilege.DRAW_TEAMS)
   @ApiOperation({ summary: 'Realiza o sorteio de times para a pelada' })
-  @ApiResponse({ status: 201, description: 'Sorteio realizado com sucesso.' })
+  @ApiCreatedResponse({
+    type: DrawTeamsResponseDto,
+    description: 'Sorteio realizado com sucesso.',
+  })
   @ResponseMessage('Sorteio realizado com sucesso.')
   async draw(@Param('peladaId') peladaId: string, @Body() body: DrawTeamsBody) {
     const result = await this.drawTeams.execute({

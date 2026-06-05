@@ -15,6 +15,8 @@ import {
   ApiResponse,
   ApiTags,
   ApiCookieAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import { type Response, type Request } from 'express';
 import ms, { StringValue } from 'ms';
@@ -34,6 +36,13 @@ import {
   PasswordsDoNotMatchError,
 } from '../../../core/domain/errors';
 import { ResponseMessage } from '../decorators/response-message.decorator';
+import {
+  RegisterResponseDto,
+  LoginResponseDto,
+  RefreshResponseDto,
+  ChangePasswordResponseDto,
+  LogoutResponseDto,
+} from '../dtos/auth-response.dto';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -60,7 +69,10 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'Registra um novo usuário no sistema' })
-  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso.' })
+  @ApiCreatedResponse({
+    type: RegisterResponseDto,
+    description: 'Usuário criado com sucesso.',
+  })
   @ApiResponse({
     status: 409,
     description: 'E-mail ou Username já estão em uso.',
@@ -85,6 +97,11 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Login do usuário no sistema' })
+  @ApiOkResponse({
+    type: LoginResponseDto,
+    description: 'Login realizado com sucesso.',
+  })
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Login realizado com sucesso.')
   async login(
@@ -108,6 +125,11 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @ApiOperation({ summary: 'Atualiza o token de acesso.' })
+  @ApiOkResponse({
+    type: RefreshResponseDto,
+    description: 'Token atualizado com sucesso.',
+  })
   @HttpCode(HttpStatus.OK)
   @ApiCookieAuth('refresh_token')
   @ResponseMessage('Token atualizado com sucesso.')
@@ -132,6 +154,11 @@ export class AuthController {
   }
 
   @Patch('change-password')
+  @ApiOperation({ summary: 'Atualiza senha do usuário.' })
+  @ApiOkResponse({
+    type: ChangePasswordResponseDto,
+    description: 'Senha alterada com sucesso.',
+  })
   @UseGuards(AuthGuard)
   @ApiCookieAuth('access_token')
   @ResponseMessage('Senha alterada com sucesso.')
@@ -153,6 +180,11 @@ export class AuthController {
   }
 
   @Post('logout')
+  @ApiOperation({ summary: 'Encerra sessão do usuário.' })
+  @ApiOkResponse({
+    type: LogoutResponseDto,
+    description: 'Sessão encerrada com sucesso.',
+  })
   @HttpCode(HttpStatus.OK)
   @ApiCookieAuth('refresh_token')
   @ResponseMessage('Sessão encerrada com sucesso.')

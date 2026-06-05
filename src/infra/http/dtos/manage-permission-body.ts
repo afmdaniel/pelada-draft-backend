@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ManagePermissionBody {
   @ApiProperty({
     description: 'E-mail válido ou username do usuário.',
-    examples: ['usuario@email.com', 'usuario123'],
+    example: 'usuario@email.com',
   })
   @IsNotEmpty()
   @IsString()
@@ -14,7 +14,7 @@ export class ManagePermissionBody {
   @ApiProperty({
     description: 'Permissão a ser concedida ou revogada.',
     enum: PeladaPrivilege,
-    examples: ['DRAW_TEAMS', 'MANAGE_PLAYERS'],
+    example: 'DRAW_TEAMS',
   })
   @IsNotEmpty()
   @ValidateIf((o: ManagePermissionBody) => o.privilege !== 'ALL')
@@ -23,7 +23,8 @@ export class ManagePermissionBody {
 
   @ApiProperty({
     description: 'Ação a ser realizada. Pode ser "ASSIGN" ou "REVOKE".',
-    examples: ['ASSIGN', 'REVOKE'],
+    enum: ['ASSIGN', 'REVOKE'],
+    example: 'ASSING',
   })
   @IsNotEmpty()
   @IsString()

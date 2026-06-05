@@ -5,7 +5,7 @@ export class UpdatePeladaBody {
   @ApiProperty({
     description:
       'Nome da pelada entre 3 e 30 caracteres, sem caracteres especiais.',
-    example: 'Pelada Teste 123',
+    example: 'Pelada Teste 456',
     minLength: 3,
     maxLength: 30,
   })

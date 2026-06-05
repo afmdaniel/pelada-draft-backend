@@ -15,6 +15,8 @@ import {
   ApiCookieAuth,
   ApiOperation,
   ApiResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import { CreatePelada } from '../../../core/application/use-cases/create-pelada';
 import { CreatePeladaBody } from '../dtos/create-pelada-body';
@@ -31,6 +33,13 @@ import { UpdatePelada } from '../../../core/application/use-cases/update-pelada'
 import { UpdatePeladaBody } from '../dtos/update-pelada-body';
 import { DeletePelada } from '../../../core/application/use-cases/detele-pelada';
 import { ResponseMessage } from '../decorators/response-message.decorator';
+import {
+  CreatePeladaResponseDto,
+  ListPeladasResponseDto,
+  GetPeladaByIdResponseDto,
+  UpdatePeladaResponseDto,
+} from '../dtos/pelada-response.dto';
+import { BaseResponseDto } from '../dtos/base-response.dto';
 
 @ApiTags('Peladas')
 @ApiCookieAuth('access_token')
@@ -47,7 +56,10 @@ export class PeladaController {
 
   @Post()
   @ApiOperation({ summary: 'Cria uma nova pelada' })
-  @ApiResponse({ status: 201, description: 'Pelada criada com sucesso.' })
+  @ApiCreatedResponse({
+    type: CreatePeladaResponseDto,
+    description: 'Pelada criada com sucesso.',
+  })
   @ResponseMessage('Pelada criada com sucesso.')
   async create(
     @Body() body: CreatePeladaBody,
@@ -67,8 +79,8 @@ export class PeladaController {
 
   @Get()
   @ApiOperation({ summary: 'Lista todas as peladas do usuário logado' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: ListPeladasResponseDto,
     description: 'Lista de peladas retornada com sucesso.',
   })
   async list(@CurrentUser() user: JwtPayload) {
@@ -89,8 +101,8 @@ export class PeladaController {
   @Get(':peladaId')
   @RequirePrivilege(PeladaPrivilege.MANAGE_PLAYERS, PeladaPrivilege.DRAW_TEAMS)
   @ApiOperation({ summary: 'Obtém detalhes de uma pelada pelo ID' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: GetPeladaByIdResponseDto,
     description: 'Detalhes da pelada retornados com sucesso.',
   })
   @ApiResponse({ status: 404, description: 'Pelada não encontrada.' })
@@ -114,7 +126,10 @@ export class PeladaController {
   @Put(':peladaId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Atualiza o nome da pelada' })
-  @ApiResponse({ status: 200, description: 'Pelada atualizada com sucesso.' })
+  @ApiOkResponse({
+    type: UpdatePeladaResponseDto,
+    description: 'Pelada atualizada com sucesso.',
+  })
   @ResponseMessage('Pelada atualizada com sucesso.')
   async update(
     @Param('peladaId') peladaId: string,
@@ -135,7 +150,10 @@ export class PeladaController {
   @Delete(':peladaId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Deleta uma pelada' })
-  @ApiResponse({ status: 200, description: 'Pelada deletada com sucesso.' })
+  @ApiOkResponse({
+    type: BaseResponseDto,
+    description: 'Pelada deletada com sucesso.',
+  })
   @ResponseMessage('Pelada deletada com sucesso.')
   async delete(@Param('peladaId') peladaId: string) {
     const result = await this.deletePelada.execute({ peladaId });
