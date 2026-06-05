@@ -1,5 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -8,7 +8,9 @@ import { GlobalExceptionFilter } from './infra/http/filters/global-exception.fil
 import { TransformInterceptor } from './infra/http/interceptors/transform.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: new ConsoleLogger({ prefix: 'PeladaDraft' }),
+  });
 
   app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 0));
 
