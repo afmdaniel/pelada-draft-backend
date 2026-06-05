@@ -10,11 +10,11 @@ import { DatabaseModule } from '../database/database.module';
 @Module({
   imports: [ApplicationModule, DatabaseModule],
   controllers: [
+    AuthController,
     PeladaController,
     PeladaPlayerController,
-    PeladaPermissionController,
     PeladaDrawController,
-    AuthController,
+    PeladaPermissionController,
   ],
   providers: [],
 })

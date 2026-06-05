@@ -10,6 +10,12 @@ import {
   Req,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
 import { type Response, type Request } from 'express';
 import ms, { StringValue } from 'ms';
 import { RegisterUser } from '../../../core/application/use-cases/register-user';
@@ -29,6 +35,7 @@ import {
 } from '../../../core/domain/errors';
 import { ResponseMessage } from '../decorators/response-message.decorator';
 
+@ApiTags('Autenticação')
 @Controller('auth')
 @Throttle({
   default: {
@@ -52,6 +59,12 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ApiOperation({ summary: 'Registra um novo usuário no sistema' })
+  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso.' })
+  @ApiResponse({
+    status: 409,
+    description: 'E-mail ou Username já estão em uso.',
+  })
   @ResponseMessage('Usuário registrado com sucesso.')
   async register(@Body() body: RegisterUserBody) {
     const { email, username, password, passwordConfirmation } = body;
@@ -96,6 +109,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiCookieAuth('refresh_token')
   @ResponseMessage('Token atualizado com sucesso.')
   async refresh(
     @Req() req: Request,
@@ -119,6 +133,7 @@ export class AuthController {
 
   @Patch('change-password')
   @UseGuards(AuthGuard)
+  @ApiCookieAuth('access_token')
   @ResponseMessage('Senha alterada com sucesso.')
   async updatePassword(
     @Body() body: ChangePasswordBody,
@@ -139,6 +154,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @ApiCookieAuth('refresh_token')
   @ResponseMessage('Sessão encerrada com sucesso.')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies['refresh_token'] as string;

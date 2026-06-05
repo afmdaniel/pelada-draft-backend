@@ -1,6 +1,7 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
@@ -44,6 +45,28 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix(process.env.API_PREFIX ?? 'api/v1');
+
+  const config = new DocumentBuilder()
+    .setTitle('API de Peladas')
+    .setDescription(
+      'Documentação completa da API de gerenciamento de peladas, jogadores e sorteio equilibrado de times.',
+    )
+    .setVersion('1.0')
+    .addCookieAuth('access_token')
+    .addCookieAuth('refresh_token')
+    .addTag('Autenticação', 'Rotas de login, cadastro e sessão')
+    .addTag('Peladas', 'Gerenciamento dos grupos de pelada')
+    .addTag('Jogadores', 'Gerenciamento dos jogadores dentro das peladas')
+    .addTag('Sorteio', 'Gerenciamento de sorteio de times dentro da pelada')
+    .addTag(
+      'Permissões',
+      'Gerenciamento de permissões de usuários dentro da pelada',
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('api-docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 }
