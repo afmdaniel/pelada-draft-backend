@@ -1,10 +1,10 @@
 {
   "name": "pelada-draft",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Backend de app para sorteio de times equilibrados em peladas de futebol.",
+  "author": "afmdaniel",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
