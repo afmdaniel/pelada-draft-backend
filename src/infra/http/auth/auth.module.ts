@@ -4,14 +4,15 @@ import { HashGenerator } from '../../../core/domain/services/hash-generator';
 import { BcryptGenerator } from '../../cryptography/bcrypt-generator';
 import { Encrypter } from '../../../core/domain/services/encrypter';
 import { JwtEncrypter } from '../../cryptography/jwt-encrypter';
+import { StringValue } from 'ms';
 
 @Module({
   imports: [
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET,
+      secret: process.env.ACCESS_TOKEN_SECRET,
       signOptions: {
-        expiresIn: '1d',
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN as StringValue,
       },
     }),
   ],

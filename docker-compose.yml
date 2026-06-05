@@ -5,13 +5,24 @@ services:
     container_name: pelada-db
     restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: pelada_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  api:
+      build: .
+      container_name: peladas_api
+      restart: always
+      ports:
+        - "3000:3000"
+      env_file:
+      - .env
+      depends_on:
+        - db
 
 volumes:
   postgres_data:
