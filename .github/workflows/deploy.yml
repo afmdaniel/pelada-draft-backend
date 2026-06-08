@@ -1,0 +1,24 @@
+name: Deploy Automático
+
+# Define quando o robô vai rodar (ao fazer push na branch main)
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Conectando no servidor e atualizando a API
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/pelada-draft-backend
+            git pull origin main
+            docker compose up --build -d
