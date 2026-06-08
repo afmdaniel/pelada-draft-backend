@@ -26,6 +26,9 @@ WORKDIR /app
 
 # Copia apenas as dependências de produção para manter a imagem leve
 COPY package*.json ./
+COPY prisma.config.ts ./
+COPY src/infra/database/prisma ./src/infra/database/prisma
+
 RUN npm ci --only=production
 
 # Copia o código compilado e os ficheiros do Prisma do Estágio 1

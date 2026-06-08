@@ -98,7 +98,7 @@ _Recomendado para o dia a dia, pois mantém o hot-reload da API ativo._
 3. Com os contêiners rodando, execture o seed dentro do contêiner da API para criar o usuário ADMIN:
 
    ```bash
-   docker exec -it peladas_api npx prisma db seed
+   docker exec -it peladas_api node dist/src/infra/database/prisma/seed.js
    ```
 
 4. Acesse a documentação da API:
