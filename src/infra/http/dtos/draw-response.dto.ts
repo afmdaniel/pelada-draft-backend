@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PlayerDto } from './player-response.dto';
+import { PlayerSummaryDto } from './player-response.dto';
 
 export class TeamDto {
-  @ApiProperty({ example: 'Time 1' })
-  name!: string;
+  @ApiProperty({ example: 25 })
+  totalStars!: number;
 
-  @ApiProperty({ type: [PlayerDto] })
-  players!: PlayerDto[];
+  @ApiProperty({ type: [PlayerSummaryDto] })
+  players!: PlayerSummaryDto[];
 }
 
 export class DrawDataDto {

@@ -15,6 +15,17 @@ export class PlayerDto {
   position!: PlayerPosition;
 }
 
+export class PlayerSummaryDto {
+  @ApiProperty({ example: 'Messi' })
+  name!: string;
+
+  @ApiProperty({ example: 10 })
+  stars!: number;
+
+  @ApiProperty({ enum: PlayerPosition, example: 'MEIO' })
+  position!: PlayerPosition;
+}
+
 export class PlayerDataDto {
   @ApiProperty({ type: PlayerDto })
   player!: PlayerDto;
