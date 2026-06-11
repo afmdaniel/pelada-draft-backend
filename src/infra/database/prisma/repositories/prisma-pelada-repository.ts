@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { PeladaRepository } from '../../../../core/domain/repositories/pelada-repository';
+import { UserWithPermissions } from '../../../../core/application/dtos/user-with-permissions.dto';
 import { Player } from '../../../../core/domain/entities/player.entity';
 import { Pelada } from '../../../../core/domain/entities/pelada.entity';
 import { PrismaPlayerMapper } from '../mappers/prisma-player-mapper';
@@ -10,6 +11,7 @@ import {
   type PeladaPrivilege,
 } from '../../../../core/domain/entities/pelada-permission.entity';
 import { PrismaPeladaPermissionMapper } from '../mappers/prisma-pelada-permission-mapper';
+import { PrismaUserWithPermissionsMapper } from '../mappers/prisma-user-with-permissions-mapper';
 import { PeladaWithPermissions } from '../../../../core/application/dtos/pelada-with-permissions.dto';
 import { GlobalRole, Prisma } from '../../generated/prisma/client';
 import { PeladaDetails } from '../../../../core/application/dtos/pelada-details.dto';
@@ -208,6 +210,28 @@ export class PrismaPeladaRepository extends PeladaRepository {
     }
 
     return PrismaPeladaPermissionMapper.toDomain(raw);
+  }
+
+  async findUsersByPeladaId(peladaId: string): Promise<UserWithPermissions[]> {
+    const rawUsers = await this.prisma.user.findMany({
+      where: {
+        permissions: {
+          some: { peladaId },
+        },
+      },
+      select: {
+        username: true,
+        email: true,
+        permissions: {
+          where: { peladaId },
+          select: { privilege: true },
+        },
+      },
+    });
+
+    return rawUsers.map((user) =>
+      PrismaUserWithPermissionsMapper.toDomain(user),
+    );
   }
 
   async assignPermissions(permissions: PeladaPermission[]): Promise<void> {

@@ -1,3 +1,4 @@
+import { UserWithPermissions } from '../../application/dtos/user-with-permissions.dto';
 import { PeladaDetails } from '../../application/dtos/pelada-details.dto';
 import { PeladaWithPermissions } from '../../application/dtos/pelada-with-permissions.dto';
 import {
@@ -32,6 +33,9 @@ export abstract class PeladaRepository {
   abstract findPermission(
     premission: PeladaPermission,
   ): Promise<PeladaPermission | null>;
+  abstract findUsersByPeladaId(
+    peladaId: string,
+  ): Promise<UserWithPermissions[]>;
   abstract assignPermissions(permissions: PeladaPermission[]): Promise<void>;
   abstract revokePermissions(
     userId: string,

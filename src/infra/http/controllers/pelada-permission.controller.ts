@@ -6,6 +6,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Get,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,16 +20,41 @@ import { AuthGuard } from '../guards/auth.guard';
 import { PeladaAccessGuard } from '../guards/pelada-access.guard';
 import { ResponseMessage } from '../decorators/response-message.decorator';
 import { BaseResponseDto } from '../dtos/base-response.dto';
+import { FetchPeladaUsers } from '../../../core/application/use-cases/fetch-pelada-users';
+import { ListUsersWithPermissionResponseDto } from '../dtos/permission-response.dto';
 
 @ApiTags('Permissões')
 @ApiCookieAuth('access_token')
 @Controller('peladas/:peladaId/permission')
 @UseGuards(AuthGuard, PeladaAccessGuard)
 export class PeladaPermissionController {
-  constructor(private managePeladaPermission: ManagePeladaPermission) {}
+  constructor(
+    private fetchPeladaUsers: FetchPeladaUsers,
+    private managePeladaPermission: ManagePeladaPermission,
+  ) {}
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Lista usuários com permissão para a pelada.',
+  })
+  @ApiOkResponse({
+    type: ListUsersWithPermissionResponseDto,
+    description: 'Lista de usuários retornada com sucesso.',
+  })
+  @ResponseMessage('Lista de usuários retornada com sucesso.')
+  async fetchUsersWithPermission(@Param('peladaId') peladaId: string) {
+    const result = await this.fetchPeladaUsers.execute({ peladaId });
+
+    if (result.isFailure) {
+      throw result.error;
+    }
+
+    return { users: result.value };
+  }
 
   @Post()
-  @HttpCode(HttpStatus.OK) // Garante que a resposta seja 200 OK
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Gerencia as permissões de um usuário em uma pelada',
   })
