@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   Patch,
   UseGuards,
@@ -23,6 +24,7 @@ import ms, { StringValue } from 'ms';
 import { RegisterUser } from '../../../core/application/use-cases/register-user';
 import { AuthenticateUser } from '../../../core/application/use-cases/authenticate-user';
 import { ChangePassword } from '../../../core/application/use-cases/change-password';
+import { GetMe } from '../../../core/application/use-cases/get-me';
 import { RegisterUserBody } from '../dtos/register-user-body';
 import { AuthenticateBody } from '../dtos/authenticate-body';
 import { ChangePasswordBody } from '../dtos/change-password-body';
@@ -42,7 +44,9 @@ import {
   RefreshResponseDto,
   ChangePasswordResponseDto,
   LogoutResponseDto,
+  GetMeResponseDto,
 } from '../dtos/auth-response.dto';
+import { UserPresenter } from '../presenters/user-presenter';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -65,6 +69,7 @@ export class AuthController {
     private changePassword: ChangePassword,
     private refreshAccessToken: RefreshAccessToken,
     private logoutUser: LogoutUser,
+    private getMe: GetMe,
   ) {}
 
   @Post('register')
@@ -199,6 +204,27 @@ export class AuthController {
 
     res.clearCookie('access_token', this.cookieOptions);
     res.clearCookie('refresh_token', this.cookieOptions);
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth('access_token')
+  @ApiOperation({ summary: 'Retorna os dados do usuário logado' })
+  @ApiOkResponse({
+    type: GetMeResponseDto,
+    description: 'Dados do usuário retornados com sucesso.',
+  })
+  @ResponseMessage('Dados do usuário retornados com sucesso.')
+  async me(@CurrentUser() user: JwtPayload) {
+    const result = await this.getMe.execute(user.sub);
+
+    if (result.isFailure) {
+      throw result.error;
+    }
+
+    return {
+      user: UserPresenter.toHTTP(result.value),
+    };
   }
 
   private setAuthCookies(

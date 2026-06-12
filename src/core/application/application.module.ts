@@ -19,6 +19,7 @@ import { UpdatePlayer } from './use-cases/update-player';
 import { DeletePlayer } from './use-cases/delete-player';
 import { AuthModule } from '../../infra/http/auth/auth.module';
 import { FetchPeladaUsers } from './use-cases/fetch-pelada-users';
+import { GetMe } from './use-cases/get-me';
 
 @Module({
   imports: [DomainModule, DatabaseModule, AuthModule],
@@ -33,6 +34,7 @@ import { FetchPeladaUsers } from './use-cases/fetch-pelada-users';
 
     RegisterUser,
     AuthenticateUser,
+    GetMe,
     ChangePassword,
     RefreshAccessToken,
     LogoutUser,
@@ -56,6 +58,7 @@ import { FetchPeladaUsers } from './use-cases/fetch-pelada-users';
 
     RegisterUser,
     AuthenticateUser,
+    GetMe,
     ChangePassword,
     RefreshAccessToken,
     LogoutUser,

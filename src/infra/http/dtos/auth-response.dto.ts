@@ -39,3 +39,33 @@ export class LogoutResponseDto {
   @ApiProperty({ example: 'Sessão encerrada com sucesso.' })
   message!: string;
 }
+
+export class UserDto {
+  @ApiProperty({ example: 'c1b4432a-d2e3-4f9e-b123-e456f0f70a1c' })
+  id!: string;
+
+  @ApiProperty({ example: 'usuario@email.com' })
+  email!: string;
+
+  @ApiProperty({ example: 'usuario123' })
+  username!: string;
+
+  @ApiProperty({ example: 'USER' })
+  role!: string;
+}
+
+export class UserDataDto {
+  @ApiProperty({ type: UserDto })
+  user!: UserDto;
+}
+
+export class GetMeResponseDto {
+  @ApiProperty({ example: true })
+  success!: boolean;
+
+  @ApiProperty({ example: 'Dados do usuário retornados com sucesso.' })
+  message!: string;
+
+  @ApiProperty({ type: UserDataDto })
+  data!: UserDataDto;
+}
