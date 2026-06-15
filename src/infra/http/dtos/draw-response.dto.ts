@@ -9,14 +9,9 @@ export class TeamDto {
   players!: PlayerSummaryDto[];
 }
 
-export class DrawDataDto {
-  @ApiProperty({ type: [TeamDto] })
-  teams!: TeamDto[];
-}
-
 export class DrawPayloadDto {
-  @ApiProperty({ type: DrawDataDto })
-  draw!: DrawDataDto;
+  @ApiProperty({ type: [TeamDto] })
+  draw!: TeamDto[];
 }
 
 export class DrawTeamsResponseDto {
