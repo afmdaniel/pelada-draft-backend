@@ -20,10 +20,13 @@ import { DeletePlayer } from './use-cases/delete-player';
 import { AuthModule } from '../../infra/http/auth/auth.module';
 import { FetchPeladaUsers } from './use-cases/fetch-pelada-users';
 import { GoogleAuthenticateUser } from './use-cases/google-authenticate-user';
+import { TokenIssuerService } from './services/token-issuer.service';
 
 @Module({
   imports: [DomainModule, DatabaseModule, AuthModule],
   providers: [
+    TokenIssuerService,
+
     CreatePelada,
     UpdatePelada,
     DeletePelada,
@@ -48,6 +51,8 @@ import { GoogleAuthenticateUser } from './use-cases/google-authenticate-user';
     DeletePlayer,
   ],
   exports: [
+    TokenIssuerService,
+
     CreatePelada,
     UpdatePelada,
     DeletePelada,
