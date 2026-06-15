@@ -1,8 +1,12 @@
 import {
   User as PrismaUser,
   GlobalRole as PrismaGlobalRole,
+  AuthProvider as PrismaAuthProvider,
 } from '../../generated/prisma/client';
-import { User as UserEntity } from '../../../../core/domain/entities/user.entity';
+import {
+  User as UserEntity,
+  AuthProvider,
+} from '../../../../core/domain/entities/user.entity';
 import { DataCorruptionError } from '../../../../core/domain/errors';
 
 export class PrismaUserMapper {
@@ -12,6 +16,8 @@ export class PrismaUserMapper {
         email: raw.email,
         username: raw.username,
         password: raw.password,
+        googleId: raw.googleId,
+        authProvider: raw.authProvider as AuthProvider,
         role: raw.role,
       },
       raw.id,
@@ -32,6 +38,8 @@ export class PrismaUserMapper {
       email: user.email,
       username: user.username,
       password: user.password,
+      googleId: user.googleId,
+      authProvider: user.authProvider as PrismaAuthProvider,
       role: user.role as PrismaGlobalRole,
     };
   }

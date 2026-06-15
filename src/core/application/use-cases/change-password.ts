@@ -27,6 +27,10 @@ export class ChangePassword {
       return Result.fail(new UserNotFoundError());
     }
 
+    if (!user.password) {
+      return Result.fail(new InvalidPasswordError());
+    }
+
     const isCurrentPasswordValid = await this.hashGenerator.compare(
       input.currentPassword,
       user.password,

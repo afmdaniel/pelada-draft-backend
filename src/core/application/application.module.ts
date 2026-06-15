@@ -20,6 +20,7 @@ import { DeletePlayer } from './use-cases/delete-player';
 import { AuthModule } from '../../infra/http/auth/auth.module';
 import { FetchPeladaUsers } from './use-cases/fetch-pelada-users';
 import { GetMe } from './use-cases/get-me';
+import { GoogleAuthenticateUser } from './use-cases/google-authenticate-user';
 
 @Module({
   imports: [DomainModule, DatabaseModule, AuthModule],
@@ -38,6 +39,7 @@ import { GetMe } from './use-cases/get-me';
     ChangePassword,
     RefreshAccessToken,
     LogoutUser,
+    GoogleAuthenticateUser,
 
     ManagePeladaPermission,
     FetchPeladaUsers,
@@ -62,6 +64,7 @@ import { GetMe } from './use-cases/get-me';
     ChangePassword,
     RefreshAccessToken,
     LogoutUser,
+    GoogleAuthenticateUser,
 
     ManagePeladaPermission,
     FetchPeladaUsers,

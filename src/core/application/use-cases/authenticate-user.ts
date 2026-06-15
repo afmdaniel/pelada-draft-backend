@@ -40,6 +40,10 @@ export class AuthenticateUser {
       return Result.fail(new UserNotFoundError());
     }
 
+    if (!user.password) {
+      return Result.fail(new InvalidPasswordError());
+    }
+
     const isPasswordValid = await this.hashGenerator.compare(
       input.password,
       user.password,

@@ -6,5 +6,7 @@ export abstract class UserRepository {
   abstract findByEmail(email: string): Promise<User | null>;
   abstract findByUsername(username: string): Promise<User | null>;
   abstract findByIdentifier(identifier: string): Promise<User | null>;
+  abstract findByGoogleId(googleId: string): Promise<User | null>;
   abstract updatePassword(userId: string, password: string): Promise<void>;
+  abstract updateGoogleId(userId: string, googleId: string): Promise<void>;
 }
