@@ -257,7 +257,7 @@ export class AuthController {
 
     this.setAuthCookies(res, result.value.accessToken, result.value.refreshToken);
 
-    return res.redirect(`${frontendUrl}/auth/callback`);
+    return res.redirect(`${frontendUrl}/peladas`);
   }
 
   private setAuthCookies(
@@ -274,6 +274,11 @@ export class AuthController {
     });
 
     res.cookie('refresh_token', refreshToken, {
+      ...this.cookieOptions,
+      maxAge: ms(refreshTtl as StringValue),
+    });
+
+    res.cookie('has_session', 1, {
       ...this.cookieOptions,
       maxAge: ms(refreshTtl as StringValue),
     });
