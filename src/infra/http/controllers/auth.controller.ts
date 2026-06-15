@@ -18,6 +18,7 @@ import {
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiExcludeEndpoint,
 } from '@nestjs/swagger';
 import { type Response, type Request } from 'express';
 import ms, { StringValue } from 'ms';
@@ -33,11 +34,14 @@ import { type JwtPayload } from '../guards/auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { RefreshAccessToken } from '../../../core/application/use-cases/refresh-access-token';
 import { LogoutUser } from '../../../core/application/use-cases/logout-user';
+import { GoogleAuthenticateUser } from '../../../core/application/use-cases/google-authenticate-user';
 import {
   MissingRefreshTokenError,
   PasswordsDoNotMatchError,
 } from '../../../core/domain/errors';
 import { ResponseMessage } from '../decorators/response-message.decorator';
+import { GoogleAuthGuard } from '../guards/google-auth.guard';
+import { type GoogleProfile } from '../auth/google.strategy';
 import {
   RegisterResponseDto,
   LoginResponseDto,
@@ -70,6 +74,7 @@ export class AuthController {
     private refreshAccessToken: RefreshAccessToken,
     private logoutUser: LogoutUser,
     private getMe: GetMe,
+    private googleAuthenticateUser: GoogleAuthenticateUser,
   ) {}
 
   @Post('register')
@@ -206,6 +211,7 @@ export class AuthController {
     res.clearCookie('refresh_token', this.cookieOptions);
   }
 
+
   @Get('me')
   @UseGuards(AuthGuard)
   @ApiCookieAuth('access_token')
@@ -227,6 +233,33 @@ export class AuthController {
     };
   }
 
+  @Get('google')
+  @ApiOperation({ summary: 'Inicia o fluxo de autenticação via Google OAuth.' })
+  @ApiResponse({ status: 302, description: 'Redireciona para o Google.' })
+  @UseGuards(GoogleAuthGuard)
+  googleLogin() {
+    // Passport redireciona para o Google automaticamente
+  }
+
+  @Get('google/callback')
+  @ApiExcludeEndpoint()
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(
+    @Req() req: Request & { user: GoogleProfile },
+    @Res() res: Response,
+  ) {
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const result = await this.googleAuthenticateUser.execute(req.user);
+
+    if (result.isFailure) {
+      return res.redirect(`${frontendUrl}/auth/error?reason=google_auth_failed`);
+    }
+
+    this.setAuthCookies(res, result.value.accessToken, result.value.refreshToken);
+
+    return res.redirect(`${frontendUrl}/peladas`);
+  }
+
   private setAuthCookies(
     res: Response,
     accessToken: string,
@@ -241,6 +274,11 @@ export class AuthController {
     });
 
     res.cookie('refresh_token', refreshToken, {
+      ...this.cookieOptions,
+      maxAge: ms(refreshTtl as StringValue),
+    });
+
+    res.cookie('has_session', 1, {
       ...this.cookieOptions,
       maxAge: ms(refreshTtl as StringValue),
     });
