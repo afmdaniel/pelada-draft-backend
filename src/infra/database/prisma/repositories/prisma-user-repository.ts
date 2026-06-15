@@ -39,10 +39,23 @@ export class PrismaUserRepository implements UserRepository {
     return PrismaUserMapper.toDomain(user);
   }
 
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({ where: { googleId } });
+    if (!user) return null;
+    return PrismaUserMapper.toDomain(user);
+  }
+
   async updatePassword(userId: string, password: string): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
       data: { password },
+    });
+  }
+
+  async updateGoogleId(userId: string, googleId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { googleId },
     });
   }
 }
