@@ -1,25 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { JwtSignOptions } from '@nestjs/jwt';
-import ms, { StringValue } from 'ms';
-import { randomUUID } from 'crypto';
 import { UserRepository } from '../../domain/repositories/user-repository';
-import { RefreshTokenRepository } from '../../domain/repositories/refresh-token-repository';
-import { Encrypter } from '../../domain/services/encrypter';
 import { User } from '../../domain/entities/user.entity';
-import { RefreshToken } from '../../domain/entities/refresh-token.entity';
 import { Result } from '../../domain/logic/result';
 import { AppError } from '../../domain/errors/app-error';
-import { authConfig } from '../../../infra/config/auth';
+import {
+  TokenIssuerService,
+  type AuthTokens,
+} from '../services/token-issuer.service';
 
 interface GoogleAuthenticateUserInput {
   googleId: string;
   email: string;
   displayName: string;
-}
-
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
 }
 
 type GoogleAuthenticateUserOutput = Result<AuthTokens, AppError>;
@@ -28,8 +20,7 @@ type GoogleAuthenticateUserOutput = Result<AuthTokens, AppError>;
 export class GoogleAuthenticateUser {
   constructor(
     private userRepository: UserRepository,
-    private refreshTokenRepository: RefreshTokenRepository,
-    private encrypter: Encrypter,
+    private tokenIssuer: TokenIssuerService,
   ) {}
 
   async execute(
@@ -66,48 +57,7 @@ export class GoogleAuthenticateUser {
       user = (await this.userRepository.findByGoogleId(input.googleId))!;
     }
 
-    return this.issueTokens(user);
-  }
-
-  private async issueTokens(
-    user: User,
-  ): Promise<GoogleAuthenticateUserOutput> {
-    const accessToken = await this.encrypter.encrypt(
-      { sub: user.id, role: user.role },
-      {
-        secret: authConfig.jwt.accessTokenSecret!,
-        expiresIn: authConfig.jwt
-          .accessTokenExpiresIn! as JwtSignOptions['expiresIn'],
-      },
-    );
-
-    const refreshTokenJti = randomUUID();
-    const refreshToken = await this.encrypter.encrypt(
-      { sub: user.id, jti: refreshTokenJti },
-      {
-        secret: authConfig.jwt.refreshTokenSecret!,
-        expiresIn: authConfig.jwt
-          .refreshTokenExpiresIn! as JwtSignOptions['expiresIn'],
-      },
-    );
-
-    const expiresAtDate = new Date(
-      Date.now() + ms(authConfig.jwt.refreshTokenExpiresIn as StringValue),
-    );
-
-    const refreshTokenData = RefreshToken.create({
-      tokenJti: refreshTokenJti,
-      userId: user.id,
-      expiresAt: expiresAtDate,
-    });
-
-    if (refreshTokenData.isFailure) {
-      return Result.fail(refreshTokenData.error);
-    }
-
-    await this.refreshTokenRepository.create(refreshTokenData.value);
-
-    return Result.ok({ accessToken, refreshToken });
+    return this.tokenIssuer.issueTokens(user.id, user.role!);
   }
 
   private async generateUniqueUsername(
