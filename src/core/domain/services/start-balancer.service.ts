@@ -2,7 +2,11 @@ import { Team } from '../entities/team.entity';
 import { PositionLimits } from '../value-objects/position-limits';
 
 export class StarsBalancerService {
-  balance(teams: Team[], limits: PositionLimits): boolean {
+  balance(
+    teams: Team[],
+    limits: PositionLimits,
+    withPosition: boolean,
+  ): boolean {
     const totals = teams.map((team) => team.totalStars);
 
     const minStars = Math.min(...totals);
@@ -20,6 +24,7 @@ export class StarsBalancerService {
       weakestTeamIndex,
       strongestTeamIndex,
       limits,
+      withPosition,
     );
   }
 
@@ -28,6 +33,7 @@ export class StarsBalancerService {
     weakestTeamIndex: number,
     strongestTeamIndex: number,
     limits: PositionLimits,
+    withPosition: boolean,
   ): boolean {
     const weakTeam = teams[weakestTeamIndex];
 
@@ -67,14 +73,17 @@ export class StarsBalancerService {
       weakTeam.swapPlayerWith(weakIndex, strongTeam, strongIndex);
 
       const valid =
-        weakTeam.isInsideLimits(limits) && strongTeam.isInsideLimits(limits);
+        !withPosition ||
+        (weakTeam.isInsideLimits(limits) && strongTeam.isInsideLimits(limits));
 
       if (valid) {
         const weakStars = weakTeam.totalStars;
 
         const strongStars = strongTeam.totalStars;
 
-        if (strongStars - weakStars <= 1) {
+        const diff = Math.abs(strongStars - weakStars);
+
+        if (diff <= 1) {
           return true;
         }
       }
