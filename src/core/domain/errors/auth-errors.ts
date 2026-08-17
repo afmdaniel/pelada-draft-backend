@@ -100,3 +100,24 @@ export class UsernameAlreadyExistsError extends ConflictError {
     super('Este nome de usuário já está em uso.', 'USERNAME_ALREADY_EXISTS');
   }
 }
+
+export class InvalidResetTokenError extends UnauthorizedError {
+  constructor() {
+    super('Token de redefinição inválido.', 'INVALID_RESET_TOKEN');
+  }
+}
+
+export class ExpiredResetTokenError extends UnauthorizedError {
+  constructor() {
+    super('Token de redefinição expirado.', 'EXPIRED_RESET_TOKEN');
+  }
+}
+
+export class ResetTokenAlreadyUsedError extends UnauthorizedError {
+  constructor() {
+    super(
+      'Este token de redefinição já foi utilizado.',
+      'RESET_TOKEN_ALREADY_USED',
+    );
+  }
+}

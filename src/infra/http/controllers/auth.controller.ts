@@ -33,6 +33,8 @@ import { type JwtPayload } from '../guards/auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { RefreshAccessToken } from '../../../core/application/use-cases/refresh-access-token';
 import { LogoutUser } from '../../../core/application/use-cases/logout-user';
+import { RequestPasswordReset } from '../../../core/application/use-cases/request-password-reset';
+import { ResetPassword } from '../../../core/application/use-cases/reset-password';
 import {
   MissingRefreshTokenError,
   PasswordsDoNotMatchError,
@@ -45,7 +47,11 @@ import {
   ChangePasswordResponseDto,
   LogoutResponseDto,
   GetMeResponseDto,
+  ForgotPasswordResponseDto,
+  ResetPasswordResponseDto,
 } from '../dtos/auth-response.dto';
+import { ForgotPasswordBody } from '../dtos/forgot-password-body';
+import { ResetPasswordBody } from '../dtos/reset-password-body';
 import { UserPresenter } from '../presenters/user-presenter';
 
 @ApiTags('Autenticação')
@@ -70,6 +76,8 @@ export class AuthController {
     private refreshAccessToken: RefreshAccessToken,
     private logoutUser: LogoutUser,
     private getMe: GetMe,
+    private requestPasswordReset: RequestPasswordReset,
+    private resetPassword: ResetPassword,
   ) {}
 
   @Post('register')
@@ -204,6 +212,49 @@ export class AuthController {
 
     res.clearCookie('access_token', this.cookieOptions);
     res.clearCookie('refresh_token', this.cookieOptions);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Solicita a redefinição de senha por e-mail.' })
+  @ApiOkResponse({
+    type: ForgotPasswordResponseDto,
+    description: 'Solicitação processada.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Throttle({
+    default: {
+      ttl: 60000,
+      limit: 3,
+    },
+  })
+  @ResponseMessage('Se o e-mail existir, um link de redefinição foi enviado.')
+  async forgotPassword(@Body() body: ForgotPasswordBody) {
+    const result = await this.requestPasswordReset.execute({
+      email: body.email,
+    });
+
+    if (result.isFailure) throw result.error;
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Redefine a senha usando um token de redefinição.' })
+  @ApiOkResponse({
+    type: ResetPasswordResponseDto,
+    description: 'Senha redefinida com sucesso.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Senha redefinida com sucesso.')
+  async resetPasswordHandler(@Body() body: ResetPasswordBody) {
+    if (body.newPassword !== body.newPasswordConfirmation) {
+      throw new PasswordsDoNotMatchError();
+    }
+
+    const result = await this.resetPassword.execute({
+      token: body.token,
+      newPassword: body.newPassword,
+    });
+
+    if (result.isFailure) throw result.error;
   }
 
   @Get('me')
