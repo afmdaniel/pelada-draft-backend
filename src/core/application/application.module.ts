@@ -20,9 +20,12 @@ import { DeletePlayer } from './use-cases/delete-player';
 import { AuthModule } from '../../infra/http/auth/auth.module';
 import { FetchPeladaUsers } from './use-cases/fetch-pelada-users';
 import { GetMe } from './use-cases/get-me';
+import { MailModule } from '../../infra/mail/mail.module';
+import { RequestPasswordReset } from './use-cases/request-password-reset';
+import { ResetPassword } from './use-cases/reset-password';
 
 @Module({
-  imports: [DomainModule, DatabaseModule, AuthModule],
+  imports: [DomainModule, DatabaseModule, AuthModule, MailModule],
   providers: [
     CreatePelada,
     UpdatePelada,
@@ -38,6 +41,8 @@ import { GetMe } from './use-cases/get-me';
     ChangePassword,
     RefreshAccessToken,
     LogoutUser,
+    RequestPasswordReset,
+    ResetPassword,
 
     ManagePeladaPermission,
     FetchPeladaUsers,
@@ -62,6 +67,8 @@ import { GetMe } from './use-cases/get-me';
     ChangePassword,
     RefreshAccessToken,
     LogoutUser,
+    RequestPasswordReset,
+    ResetPassword,
 
     ManagePeladaPermission,
     FetchPeladaUsers,

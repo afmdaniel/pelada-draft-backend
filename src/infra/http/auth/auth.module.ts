@@ -4,6 +4,8 @@ import { HashGenerator } from '../../../core/domain/services/hash-generator';
 import { BcryptGenerator } from '../../cryptography/bcrypt-generator';
 import { Encrypter } from '../../../core/domain/services/encrypter';
 import { JwtEncrypter } from '../../cryptography/jwt-encrypter';
+import { TokenHasher } from '../../../core/domain/services/token-hasher';
+import { Sha256TokenHasher } from '../../cryptography/sha256-token-hasher';
 import { StringValue } from 'ms';
 
 @Module({
@@ -25,7 +27,11 @@ import { StringValue } from 'ms';
       provide: Encrypter,
       useClass: JwtEncrypter,
     },
+    {
+      provide: TokenHasher,
+      useClass: Sha256TokenHasher,
+    },
   ],
-  exports: [HashGenerator, Encrypter],
+  exports: [HashGenerator, Encrypter, TokenHasher],
 })
 export class AuthModule {}

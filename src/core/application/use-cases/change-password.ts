@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../../domain/repositories/user-repository';
+import { RefreshTokenRepository } from '../../domain/repositories/refresh-token-repository';
 import { HashGenerator } from '../../domain/services/hash-generator';
 import { Result } from '../../domain/logic/result';
 import { AppError } from '../../domain/errors/app-error';
@@ -17,6 +18,7 @@ type AddPlayerOutput = Result<void, AppError>;
 export class ChangePassword {
   constructor(
     private userRepository: UserRepository,
+    private refreshTokenRepository: RefreshTokenRepository,
     private hashGenerator: HashGenerator,
   ) {}
 
@@ -39,6 +41,7 @@ export class ChangePassword {
     const hashedNewPassword = await this.hashGenerator.hash(input.newPassword);
 
     await this.userRepository.updatePassword(input.userId, hashedNewPassword);
+    await this.refreshTokenRepository.deleteByUserId(input.userId);
 
     return Result.ok(undefined);
   }

@@ -40,6 +40,24 @@ export class LogoutResponseDto {
   message!: string;
 }
 
+export class ForgotPasswordResponseDto {
+  @ApiProperty({ example: true })
+  success!: boolean;
+
+  @ApiProperty({
+    example: 'Se o e-mail existir, um link de redefinição foi enviado.',
+  })
+  message!: string;
+}
+
+export class ResetPasswordResponseDto {
+  @ApiProperty({ example: true })
+  success!: boolean;
+
+  @ApiProperty({ example: 'Senha redefinida com sucesso.' })
+  message!: string;
+}
+
 export class UserDto {
   @ApiProperty({ example: 'c1b4432a-d2e3-4f9e-b123-e456f0f70a1c' })
   id!: string;
