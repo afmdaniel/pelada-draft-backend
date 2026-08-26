@@ -7,25 +7,57 @@ export class StarsBalancerService {
     limits: PositionLimits,
     withPosition: boolean,
   ): boolean {
-    const totals = teams.map((team) => team.totalStars);
+    const MAX_ITERATIONS = 50;
 
-    const minStars = Math.min(...totals);
-    const maxStars = Math.max(...totals);
+    for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+      const totals = teams.map((team) => team.totalStars);
 
-    if (maxStars - minStars <= 1) {
-      return true;
+      if (Math.max(...totals) - Math.min(...totals) <= 1) {
+        return true;
+      }
+
+      const pairs = this.buildCandidatePairs(totals);
+
+      const improved = pairs.some(({ weakIndex, strongIndex }) =>
+        this.tryBalanceTeams(
+          teams,
+          weakIndex,
+          strongIndex,
+          limits,
+          withPosition,
+        ),
+      );
+
+      if (!improved) {
+        break;
+      }
     }
 
-    const weakestTeamIndex = totals.indexOf(minStars);
-    const strongestTeamIndex = totals.indexOf(maxStars);
+    const finalTotals = teams.map((team) => team.totalStars);
 
-    return this.tryBalanceTeams(
-      teams,
-      weakestTeamIndex,
-      strongestTeamIndex,
-      limits,
-      withPosition,
-    );
+    return Math.max(...finalTotals) - Math.min(...finalTotals) <= 1;
+  }
+
+  private buildCandidatePairs(
+    totals: number[],
+  ): Array<{ weakIndex: number; strongIndex: number; delta: number }> {
+    const pairs: Array<{
+      weakIndex: number;
+      strongIndex: number;
+      delta: number;
+    }> = [];
+
+    for (let weakIndex = 0; weakIndex < totals.length; weakIndex++) {
+      for (let strongIndex = 0; strongIndex < totals.length; strongIndex++) {
+        const delta = totals[strongIndex] - totals[weakIndex];
+
+        if (delta > 1) {
+          pairs.push({ weakIndex, strongIndex, delta });
+        }
+      }
+    }
+
+    return pairs.sort((a, b) => b.delta - a.delta);
   }
 
   private tryBalanceTeams(
@@ -43,6 +75,7 @@ export class StarsBalancerService {
       weakIndex: number;
       strongIndex: number;
       delta: number;
+      weakStars: number;
     }> = [];
 
     for (let weakIndex = 0; weakIndex < weakTeam.players.length; weakIndex++) {
@@ -63,11 +96,12 @@ export class StarsBalancerService {
           weakIndex,
           strongIndex,
           delta: strongPlayer.stars - weakPlayer.stars,
+          weakStars: weakPlayer.stars,
         });
       }
     }
 
-    candidates.sort((a, b) => a.delta - b.delta);
+    candidates.sort((a, b) => a.weakStars - b.weakStars || a.delta - b.delta);
 
     for (const { weakIndex, strongIndex } of candidates) {
       weakTeam.swapPlayerWith(weakIndex, strongTeam, strongIndex);
