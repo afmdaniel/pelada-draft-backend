@@ -44,6 +44,25 @@ describe('StarsBalancerService', () => {
     expect(teamB.totalStars).toBe(9);
   });
 
+  it('prefers swapping the weakest players over stacking the strongest ones on the same team', () => {
+    const teamA = createTeam(
+      [8, 7, 6, 6, 5, 3].map((stars) => createPlayer(stars)),
+    );
+    const teamB = createTeam(
+      [8, 7, 6, 6, 6, 4].map((stars) => createPlayer(stars)),
+    );
+
+    const result = service.balance([teamA, teamB], PERMISSIVE_LIMITS, false);
+
+    expect(result).toBe(true);
+    expect(teamA.players.map((p) => p.stars).sort((a, b) => b - a)).toEqual([
+      8, 7, 6, 6, 5, 4,
+    ]);
+    expect(teamB.players.map((p) => p.stars).sort((a, b) => b - a)).toEqual([
+      8, 7, 6, 6, 6, 3,
+    ]);
+  });
+
   it('keeps balancing every team, not just the single global min/max pair', () => {
     const teamA = createTeam([createPlayer(4), createPlayer(3)]);
     const teamB = createTeam([createPlayer(7), createPlayer(6)]);

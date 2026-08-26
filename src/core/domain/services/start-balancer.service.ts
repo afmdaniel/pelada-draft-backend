@@ -75,6 +75,7 @@ export class StarsBalancerService {
       weakIndex: number;
       strongIndex: number;
       delta: number;
+      weakStars: number;
     }> = [];
 
     for (let weakIndex = 0; weakIndex < weakTeam.players.length; weakIndex++) {
@@ -95,11 +96,12 @@ export class StarsBalancerService {
           weakIndex,
           strongIndex,
           delta: strongPlayer.stars - weakPlayer.stars,
+          weakStars: weakPlayer.stars,
         });
       }
     }
 
-    candidates.sort((a, b) => a.delta - b.delta);
+    candidates.sort((a, b) => a.weakStars - b.weakStars || a.delta - b.delta);
 
     for (const { weakIndex, strongIndex } of candidates) {
       weakTeam.swapPlayerWith(weakIndex, strongTeam, strongIndex);
